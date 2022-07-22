@@ -6,6 +6,7 @@ from mainwindow import Ui_MainWindow
 from settings import Ui_Settings
 from detailswindow import Ui_Details
 from tagmanager import Ui_TagManager
+from variable_manager import VariableManagerDialog
 from os import getcwd
 import os
 import json
@@ -108,9 +109,18 @@ class DetailsDialog(QDialog):
 
         (name,) = self.cur.execute("SELECT name FROM films WHERE uid = ?", (uid,)).fetchone()
         self.ui.titleBrowser.setText(name)
+        self.ui.titleBrowser.setFixedHeight(self.ui.titleBrowser.size().height())
+        self.ui.varTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+        self.show()
+
+        self.setup_tags()
+        self.setup_vars()
+
+    
+    def setup_tags(self):
         self.all_tags = self.cur.execute("SELECT tag, tagid FROM tags").fetchall()
-        self.selected_tags = [tagid for (tagid,) in self.cur.execute("SELECT tags.tagid FROM tags INNER JOIN tagmap ON tags.tagid = tagmap.tagid AND filmid=?", (uid,)).fetchall()]
+        self.selected_tags = [tagid for (tagid,) in self.cur.execute("SELECT tags.tagid FROM tags INNER JOIN tagmap ON tags.tagid = tagmap.tagid AND filmid=?", (self.uid,)).fetchall()]
         for (tag, tagid) in self.all_tags:
             box = QListWidgetItem(tag)
             box.setFlags(box.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -122,8 +132,39 @@ class DetailsDialog(QDialog):
             self.ui.tagsList.addItem(box)
 
         self.ui.tagsList.itemChanged.connect(self.tag_changed)
+    
+    def setup_vars(self):
+        self.all_vars = self.cur.execute("SELECT variable, varid, min, max FROM variables").fetchall()
+        self.selected_vars = dict(self.cur.execute("SELECT variables.varid, varmap.value FROM variables INNER JOIN varmap ON variables.varid = varmap.varid AND filmid=?", (self.uid,)).fetchall())
+        for (var, varid, min, max) in self.all_vars:
+            var_item = QTableWidgetItem(var)
+            var_item.setData(QtCore.Qt.UserRole, varid)
+            min_item = QTableWidgetItem(str(min))
+            slider = QSlider(QtCore.Qt.Horizontal)
+            slider.setMinimum(min)
+            slider.setMaximum(max)
+            slider.setValue(self.selected_vars[varid] if varid in self.selected_vars else min)
+            max_item = QTableWidgetItem(str(max))
+            checkbox = QCheckBox()
+            value_item = QTableWidgetItem(str(self.selected_vars[varid]) if varid in self.selected_vars else str(min))
 
-        self.show()
+            row = self.ui.varTable.rowCount()
+            self.ui.varTable.insertRow(row)
+            self.ui.varTable.setItem(row, 0, var_item)
+            self.ui.varTable.setItem(row, 1, min_item)
+            self.ui.varTable.setCellWidget(row, 2, slider)
+            self.ui.varTable.setItem(row, 3, max_item)
+            self.ui.varTable.setCellWidget(row, 4, checkbox)
+            self.ui.varTable.setItem(row, 5, value_item)
+            
+            if varid in self.selected_vars:
+                checkbox.setCheckState(QtCore.Qt.Checked)
+            else:
+                checkbox.setCheckState(QtCore.Qt.Unchecked)
+            
+            checkbox.stateChanged.connect(lambda state, varid=varid, row=row: self.var_changed(state, varid, row))
+            slider.valueChanged.connect(lambda state, varid=varid, row=row: self.slider_changed(state, varid, row))
+
     
     def tag_changed(self, item):
         add_tag = item.checkState() == QtCore.Qt.Checked
@@ -133,19 +174,36 @@ class DetailsDialog(QDialog):
         else:
             self.cur.execute("DELETE FROM tagmap WHERE tagid = ? AND filmid = ?", (tagid, self.uid))
 
+    def var_changed(self, state, varid, row):
+        enable = state == 2
+        if enable:
+            value = int(self.ui.varTable.item(row, 5).text())
+            self.cur.execute("INSERT INTO varmap (varid, filmid, value) VALUES (?, ?, ?)", (varid, self.uid, value))
+        else:
+            self.cur.execute("DELETE FROM varmap WHERE varid = ? AND filmid = ?", (varid, self.uid))
+
+    def slider_changed(self, state, varid, row):
+        value_item = QTableWidgetItem(str(state))
+        self.ui.varTable.setItem(row, 5, value_item)
+        checkbox = self.ui.varTable.cellWidget(row, 4)
+        if checkbox.checkState() == QtCore.Qt.Checked:
+            self.cur.execute("UPDATE varmap SET value = ? WHERE varid = ? AND filmid = ?", (state, varid, self.uid))
+        else:
+            checkbox.setChecked(True)
+        
 
 
 
 class SettingsDialog(QDialog):
     def __init__(self, cur, dbcon):
         super().__init__()
-        #super(QDialogButtonBox, self).__init__()
         self.ui = Ui_Settings()
         self.ui.setupUi(self)
         self.cur = cur
         self.dbcon = dbcon
         self.ui.browseFiles.clicked.connect(self.browse_files)
         self.ui.tagEditorButton.clicked.connect(self.open_tag_manager)
+        self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
         self.config = None
 
     def browse_files(self):
@@ -153,6 +211,13 @@ class SettingsDialog(QDialog):
     
     def open_tag_manager(self):
         self.tag_manager = TagManager(self.cur)
+        if self.tag_manager.exec() == QDialog.Accepted:
+            self.dbcon.commit()
+        else:
+            self.dbcon.rollback()
+    
+    def open_var_manager(self):
+        self.tag_manager = VariableManagerDialog(self.cur)
         if self.tag_manager.exec() == QDialog.Accepted:
             self.dbcon.commit()
         else:

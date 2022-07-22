@@ -51,7 +51,17 @@ class Ui_Settings(object):
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.buttonBox)
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.buttonBox)
+
+        self.label_3 = QLabel(Settings)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_3)
+
+        self.variableManagerButton = QPushButton(Settings)
+        self.variableManagerButton.setObjectName(u"variableManagerButton")
+
+        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.variableManagerButton)
 
 
         self.retranslateUi(Settings)
@@ -67,5 +77,7 @@ class Ui_Settings(object):
         self.browseFiles.setText(QCoreApplication.translate("Settings", u"Browse", None))
         self.label_2.setText(QCoreApplication.translate("Settings", u"Manage tags:", None))
         self.tagEditorButton.setText(QCoreApplication.translate("Settings", u"Tag editor", None))
+        self.label_3.setText(QCoreApplication.translate("Settings", u"Manage variables:", None))
+        self.variableManagerButton.setText(QCoreApplication.translate("Settings", u"Variable manager", None))
     # retranslateUi
 
