@@ -26,13 +26,6 @@ class Ui_Settings(object):
         Settings.resize(665, 378)
         self.formLayout = QFormLayout(Settings)
         self.formLayout.setObjectName(u"formLayout")
-        self.buttonBox = QDialogButtonBox(Settings)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.buttonBox)
-
         self.label = QLabel(Settings)
         self.label.setObjectName(u"label")
 
@@ -42,6 +35,23 @@ class Ui_Settings(object):
         self.browseFiles.setObjectName(u"browseFiles")
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.browseFiles)
+
+        self.label_2 = QLabel(Settings)
+        self.label_2.setObjectName(u"label_2")
+
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_2)
+
+        self.tagEditorButton = QPushButton(Settings)
+        self.tagEditorButton.setObjectName(u"tagEditorButton")
+
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.tagEditorButton)
+
+        self.buttonBox = QDialogButtonBox(Settings)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.buttonBox)
 
 
         self.retranslateUi(Settings)
@@ -55,5 +65,7 @@ class Ui_Settings(object):
         Settings.setWindowTitle(QCoreApplication.translate("Settings", u"Settings", None))
         self.label.setText(QCoreApplication.translate("Settings", u"Search directory:", None))
         self.browseFiles.setText(QCoreApplication.translate("Settings", u"Browse", None))
+        self.label_2.setText(QCoreApplication.translate("Settings", u"Manage tags:", None))
+        self.tagEditorButton.setText(QCoreApplication.translate("Settings", u"Tag editor", None))
     # retranslateUi
 
