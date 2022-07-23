@@ -2,7 +2,7 @@ import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import *
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QIcon
 from mainwindow import Ui_MainWindow
 from new_shelf import NewShelfDialog
 from edit_shelf import EditShelfDialog
@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
 
     def open_details(self, loc, bar):
         item = bar.itemAt(loc)
-        self.details = DetailsDialog(self.cur, item.data(QtCore.Qt.UserRole))
+        self.details = DetailsDialog(self.cur, item.data(QtCore.Qt.UserRole), item)
         if self.details.exec() == QDialog.Accepted:
             self.dbcon.commit()
         else:
@@ -180,15 +180,16 @@ class MainWindow(QMainWindow):
         event.accept()
 
 class DetailsDialog(QDialog):
-    def __init__(self, cur, uid):
+    def __init__(self, cur, uid, item):
         super().__init__()
         #super(QDialogButtonBox, self).__init__()
         self.ui = Ui_Details()
         self.ui.setupUi(self)
         self.cur = cur
         self.uid = uid
+        self.list_item = item
 
-        (name,) = self.cur.execute("SELECT name FROM films WHERE uid = ?", (uid,)).fetchone()
+        (name, thumbfrac, self.path, self.duration) = self.cur.execute("SELECT name, thumbfrac, path, duration FROM films WHERE uid = ?", (uid,)).fetchone()
         self.ui.titleBrowser.setText(name)
         self.ui.titleBrowser.setFixedHeight(self.ui.titleBrowser.size().height())
         self.ui.varTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -197,6 +198,10 @@ class DetailsDialog(QDialog):
 
         self.setup_tags()
         self.setup_vars()
+
+        self.ui.thumbPosSlider.setValue(int(thumbfrac*100))
+        self.ui.rethumbButton.clicked.connect(self.rethumb)
+        self.ui.resetThumbSliderButton.clicked.connect(self.reset_thumb)
 
     
     def setup_tags(self):
@@ -270,8 +275,21 @@ class DetailsDialog(QDialog):
         if checkbox.checkState() == QtCore.Qt.Checked:
             self.cur.execute("UPDATE varmap SET value = ? WHERE varid = ? AND filmid = ?", (state, varid, self.uid))
         else:
-            checkbox.setChecked(True)       
-
+            checkbox.setChecked(True)
+    
+    def rethumb(self):
+        thumbfrac = self.ui.thumbPosSlider.value()/100
+        pos = int(self.duration*thumbfrac)
+        thumb_path = f"{getcwd()}\\thumbnails\\{self.uid}.jpg"
+        #os.remove(thumb_path)
+        subprocess.call(['ffmpeg', '-ss', str(pos), '-i', self.path,  '-vframes', '1', '-vf', 'scale=320:180:force_original_aspect_ratio=decrease,pad=320:180:-1:-1', '-y', thumb_path],
+            stdout=subprocess.DEVNULL)
+        new_icon = QIcon(thumb_path)
+        self.list_item.setIcon(new_icon)
+        self.cur.execute("UPDATE films SET thumbfrac = ? WHERE uid = ?", (thumbfrac, self.uid))
+    
+    def reset_thumb(self):
+        self.ui.thumbPosSlider.setValue(50)
 
 
 class SettingsDialog(QDialog):
