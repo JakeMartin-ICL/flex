@@ -72,6 +72,11 @@ class Ui_NewShelfDialog(object):
 
         self.verticalLayout.addWidget(self.varTable)
 
+        self.label_6 = QLabel(NewShelfDialog)
+        self.label_6.setObjectName(u"label_6")
+
+        self.verticalLayout.addWidget(self.label_6)
+
         self.line = QFrame(NewShelfDialog)
         self.line.setObjectName(u"line")
         self.line.setFrameShape(QFrame.HLine)
@@ -154,6 +159,7 @@ class Ui_NewShelfDialog(object):
         ___qtablewidgetitem1.setText(QCoreApplication.translate("NewShelfDialog", u"Minimum", None));
         ___qtablewidgetitem2 = self.varTable.horizontalHeaderItem(2)
         ___qtablewidgetitem2.setText(QCoreApplication.translate("NewShelfDialog", u"Maximum", None));
+        self.label_6.setText(QCoreApplication.translate("NewShelfDialog", u"Syntax reference:  [tag] |path| {variable = x} AND OR !", None))
         self.label_4.setText(QCoreApplication.translate("NewShelfDialog", u"Name:", None))
         self.nameEdit.setPlaceholderText(QCoreApplication.translate("NewShelfDialog", u"New shelf", None))
         self.label_3.setText(QCoreApplication.translate("NewShelfDialog", u"Filter:", None))

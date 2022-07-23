@@ -96,6 +96,17 @@ def SQLify(filter, limit, shuffle):
                 query += char
                 curr += 1
             query += ')'
+        elif char == '|':
+            path = ''
+            curr += 1
+            while True:
+                char = filter[curr]
+                if char == '|':
+                    break
+                path += char
+                curr += 1
+            query += f'path {"NOT " if negate else ""} LIKE "%{path}%"'
+            negate = False
         else:
             query += char
         curr += 1
