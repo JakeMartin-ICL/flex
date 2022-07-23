@@ -2,6 +2,7 @@ import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import *
 from PySide6.QtUiTools import QUiLoader
+from PySide6.QtGui import QAction
 from mainwindow import Ui_MainWindow
 from new_shelf import NewShelfDialog
 from edit_shelf import EditShelfDialog
@@ -31,6 +32,9 @@ class MainWindow(QMainWindow):
 
         self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionRe_index.triggered.connect(self.reindex)
+        reload = self.ui.menubar.addAction("Reload")
+        reload.triggered.connect(self.reload)
+
         self.ui.newShelfButton.clicked.connect(self.open_new_shelf_dialog)
         
         try:
@@ -53,12 +57,14 @@ class MainWindow(QMainWindow):
         self.ui.listWidget.customContextMenuRequested.connect(lambda loc, bar=self.ui.listWidget : self.open_details(loc, bar))
 
         self.shelves = {}
+        self.load_shelves()
 
+    def load_shelves(self):
         if self.config["show_untagged"]:
             self.new_direct_query_shelf("Untagged Files", queries.untagged)
         
-        for filter in self.config["shelves"]:
-            self.new_shelf(filter)
+        for shelf_name in self.config["order"]:
+            self.new_shelf(shelf_name)
 
     def new_direct_query_shelf(self, name, query):
         shelf_config = {"filter": query, "limit": 1000, "shuffle": False}
@@ -118,8 +124,18 @@ class MainWindow(QMainWindow):
             name_bar.deleteLater()
             self.ui.scrollAreaLayout.removeWidget(shelf)
             shelf.deleteLater()
+            del self.shelves[name]
         else:
             self.shelves[name][1].reload(self.config["shelves"][name])
+    
+    def reload(self):
+        for (name_bar, shelf) in self.shelves.values():
+            self.ui.scrollAreaLayout.removeWidget(name_bar)
+            name_bar.deleteLater()
+            self.ui.scrollAreaLayout.removeWidget(shelf)
+            shelf.deleteLater()
+        self.shelves = {}
+        self.load_shelves()
 
     def reindex(self):
         start = time.time()
@@ -254,8 +270,7 @@ class DetailsDialog(QDialog):
         if checkbox.checkState() == QtCore.Qt.Checked:
             self.cur.execute("UPDATE varmap SET value = ? WHERE varid = ? AND filmid = ?", (state, varid, self.uid))
         else:
-            checkbox.setChecked(True)
-        
+            checkbox.setChecked(True)       
 
 
 
@@ -271,6 +286,12 @@ class SettingsDialog(QDialog):
         self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
         self.ui.showUntaggedCheckBox.setChecked(config["show_untagged"])
         self.ui.showUntaggedCheckBox.stateChanged.connect(self.show_untagged)
+
+        for name, shelf_config in config["shelves"].items():
+            item = QListWidgetItem(name)
+            self.ui.orderList.addItem(item)
+        self.ui.orderList.model().rowsMoved.connect(self.update_order)
+
         self.config = config
 
     def browse_files(self):
@@ -294,7 +315,13 @@ class SettingsDialog(QDialog):
         show = state == 2
         self.config["show_untagged"] = show
 
-    
+    def update_order(self):
+        new_order = []
+        for i in range(self.ui.orderList.count()):
+            name = self.ui.orderList.item(i).text()
+            new_order.append(name)
+        self.config["order"] = new_order
+
     def get_config(self):
         return self.config
 
