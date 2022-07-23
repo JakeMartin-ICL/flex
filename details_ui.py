@@ -96,6 +96,32 @@ class Ui_Details(object):
 
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.varTable)
 
+        self.label_5 = QLabel(Details)
+        self.label_5.setObjectName(u"label_5")
+
+        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.label_5)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.folderNoRadioButton = QRadioButton(Details)
+        self.folderNoRadioButton.setObjectName(u"folderNoRadioButton")
+        self.folderNoRadioButton.setChecked(True)
+
+        self.horizontalLayout_2.addWidget(self.folderNoRadioButton)
+
+        self.folderAdditiveRadioButton = QRadioButton(Details)
+        self.folderAdditiveRadioButton.setObjectName(u"folderAdditiveRadioButton")
+
+        self.horizontalLayout_2.addWidget(self.folderAdditiveRadioButton)
+
+        self.folderAllRadioButton = QRadioButton(Details)
+        self.folderAllRadioButton.setObjectName(u"folderAllRadioButton")
+
+        self.horizontalLayout_2.addWidget(self.folderAllRadioButton)
+
+
+        self.formLayout.setLayout(7, QFormLayout.FieldRole, self.horizontalLayout_2)
+
         self.label_4 = QLabel(Details)
         self.label_4.setObjectName(u"label_4")
 
@@ -130,31 +156,6 @@ class Ui_Details(object):
 
         self.formLayout.setWidget(9, QFormLayout.LabelRole, self.buttonBox)
 
-        self.label_5 = QLabel(Details)
-        self.label_5.setObjectName(u"label_5")
-
-        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.label_5)
-
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.folderNoRadioButton = QRadioButton(Details)
-        self.folderNoRadioButton.setObjectName(u"folderNoRadioButton")
-
-        self.horizontalLayout_2.addWidget(self.folderNoRadioButton)
-
-        self.folderAdditiveRadioButton = QRadioButton(Details)
-        self.folderAdditiveRadioButton.setObjectName(u"folderAdditiveRadioButton")
-
-        self.horizontalLayout_2.addWidget(self.folderAdditiveRadioButton)
-
-        self.folderAllRadioButton = QRadioButton(Details)
-        self.folderAllRadioButton.setObjectName(u"folderAllRadioButton")
-
-        self.horizontalLayout_2.addWidget(self.folderAllRadioButton)
-
-
-        self.formLayout.setLayout(7, QFormLayout.FieldRole, self.horizontalLayout_2)
-
 
         self.retranslateUi(Details)
         self.buttonBox.accepted.connect(Details.accept)
@@ -180,12 +181,12 @@ class Ui_Details(object):
         ___qtablewidgetitem4.setText(QCoreApplication.translate("Details", u"Enabled", None));
         ___qtablewidgetitem5 = self.varTable.horizontalHeaderItem(5)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("Details", u"Value", None));
-        self.label_4.setText(QCoreApplication.translate("Details", u"Thumb position:", None))
-        self.rethumbButton.setText(QCoreApplication.translate("Details", u"Confirm", None))
-        self.resetThumbSliderButton.setText(QCoreApplication.translate("Details", u"Reset", None))
         self.label_5.setText(QCoreApplication.translate("Details", u"Apply to folder:", None))
         self.folderNoRadioButton.setText(QCoreApplication.translate("Details", u"No", None))
         self.folderAdditiveRadioButton.setText(QCoreApplication.translate("Details", u"Additive", None))
         self.folderAllRadioButton.setText(QCoreApplication.translate("Details", u"All", None))
+        self.label_4.setText(QCoreApplication.translate("Details", u"Thumb position:", None))
+        self.rethumbButton.setText(QCoreApplication.translate("Details", u"Confirm", None))
+        self.resetThumbSliderButton.setText(QCoreApplication.translate("Details", u"Reset", None))
     # retranslateUi
 
