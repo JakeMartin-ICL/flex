@@ -3,10 +3,15 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import *
 from PySide6.QtUiTools import QUiLoader
 from mainwindow import Ui_MainWindow
+from new_shelf import NewShelfDialog
+from edit_shelf import EditShelfDialog
 from settings import Ui_Settings
 from detailswindow import Ui_Details
 from tagmanager import Ui_TagManager
 from variable_manager import VariableManagerDialog
+from shelf import Shelf
+from name_bar import NameBar
+import queries
 from os import getcwd
 import os
 import json
@@ -26,12 +31,13 @@ class MainWindow(QMainWindow):
 
         self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionRe_index.triggered.connect(self.reindex)
+        self.ui.newShelfButton.clicked.connect(self.open_new_shelf_dialog)
         
         try:
             with open("config.json", 'r') as config_file:
                 self.config = json.load(config_file)
         except:
-            self.config = {"search_dir" : getcwd()}
+            self.config = {"search_dir" : getcwd(), "shelves" : {}, "show_untagged" : True}
             with open("config.json", 'w') as new_config:
                 json.dump(self.config, new_config)
         
@@ -46,6 +52,39 @@ class MainWindow(QMainWindow):
         self.ui.listWidget.itemClicked.connect(self.video_clicked)
         self.ui.listWidget.customContextMenuRequested.connect(lambda loc, bar=self.ui.listWidget : self.open_details(loc, bar))
 
+        self.shelves = {}
+
+        if self.config["show_untagged"]:
+            self.new_direct_query_shelf("Untagged Files", queries.untagged)
+        
+        for filter in self.config["shelves"]:
+            self.new_shelf(filter)
+
+    def new_direct_query_shelf(self, name, query):
+        shelf_config = {"filter": query, "limit": 1000, "shuffle": False}
+        shelf = Shelf(self.cur, name, shelf_config, direct_query=True)
+        label = QLabel(f"{name} - {len(shelf)}")
+        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, label)
+        
+        
+        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
+        shelf.itemClicked.connect(self.video_clicked)
+        shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar))
+        self.shelves[name] = (label, shelf)
+    
+    def new_shelf(self, name):
+        shelf_config = self.config["shelves"][name]
+        shelf = Shelf(self.cur, name, shelf_config)
+        name_bar = NameBar(f"{name} - {len(shelf)}")
+        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, name_bar)
+        name_bar.shelfToolButton.clicked.connect(lambda test=True, name=name : self.open_edit_shelf_dialog(test, name))
+
+        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
+        shelf.itemClicked.connect(self.video_clicked)
+        shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar))
+        self.shelves[name] = (name_bar, shelf)
+
+
     def video_clicked(self, item):
         uid = item.data(QtCore.Qt.UserRole)
         (path, ) = self.cur.execute("SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
@@ -58,6 +97,29 @@ class MainWindow(QMainWindow):
             self.dbcon.commit()
         else:
             self.dbcon.rollback()
+
+    def open_new_shelf_dialog(self):
+        self.new_shelf_dialog = NewShelfDialog(self.cur, self.config)
+        if self.new_shelf_dialog.exec() == QDialog.Accepted:
+            self.config = self.new_shelf_dialog.get_config()
+            self.save_config()
+            name = list(self.config["shelves"].keys())[-1]
+            self.new_shelf(name)
+    
+    def open_edit_shelf_dialog(self, test, name):
+        print(f"T: {test}. n: {name}")
+        self.edit_shelf_dialog = EditShelfDialog(self.cur, self.config, name)
+        deleted = self.edit_shelf_dialog.exec() == QDialog.Rejected
+        self.config = self.edit_shelf_dialog.config
+        self.save_config()
+        (name_bar, shelf) = self.shelves[name]
+        if deleted:
+            self.ui.scrollAreaLayout.removeWidget(name_bar)
+            name_bar.deleteLater()
+            self.ui.scrollAreaLayout.removeWidget(shelf)
+            shelf.deleteLater()
+        else:
+            self.shelves[name][1].reload(self.config["shelves"][name])
 
     def reindex(self):
         start = time.time()
@@ -84,14 +146,17 @@ class MainWindow(QMainWindow):
         self.dbcon.commit()
 
     def show_settings(self):
-        self.settings_w = SettingsDialog(self.cur, self.dbcon)
-        self.settings_w.set_settings(self.config)
+        self.settings_w = SettingsDialog(self.cur, self.dbcon, self.config)
         self.settings_w.show()
         if self.settings_w.exec() == QDialog.Accepted:
             self.config = self.settings_w.get_config()
-            print(f"New config! {self.config}")
-            with open("config.json", 'w') as config_file:
-                json.dump(self.config, config_file)
+            self.save_config()
+
+    
+    def save_config(self):
+        print(f"New config! {self.config}")
+        with open("config.json", 'w') as config_file:
+            json.dump(self.config, config_file)
     
     def closeEvent(self, event):
         print("Safely closing")
@@ -195,7 +260,7 @@ class DetailsDialog(QDialog):
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, cur, dbcon):
+    def __init__(self, cur, dbcon, config):
         super().__init__()
         self.ui = Ui_Settings()
         self.ui.setupUi(self)
@@ -204,7 +269,9 @@ class SettingsDialog(QDialog):
         self.ui.browseFiles.clicked.connect(self.browse_files)
         self.ui.tagEditorButton.clicked.connect(self.open_tag_manager)
         self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
-        self.config = None
+        self.ui.showUntaggedCheckBox.setChecked(config["show_untagged"])
+        self.ui.showUntaggedCheckBox.stateChanged.connect(self.show_untagged)
+        self.config = config
 
     def browse_files(self):
         self.config["search_dir"] = QFileDialog.getExistingDirectory()
@@ -223,8 +290,10 @@ class SettingsDialog(QDialog):
         else:
             self.dbcon.rollback()
 
-    def set_settings(self, config):
-        self.config = config
+    def show_untagged(self, state):
+        show = state == 2
+        self.config["show_untagged"] = show
+
     
     def get_config(self):
         return self.config
@@ -276,6 +345,11 @@ def get_length(path):
     return int(float(result.stdout))
 
 app = QtWidgets.QApplication(sys.argv)
+#app.setStyleSheet("QLabel{font-size: 18pt;}")
+file = QtCore.QFile("./stylesheet.qss")
+file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text)
+stream = QtCore.QTextStream(file)
+app.setStyleSheet(stream.readAll())
 window = MainWindow()
 window.show()
 app.exec()

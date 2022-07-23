@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QFormLayout, QLabel, QPushButton, QSizePolicy,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
+    QDialogButtonBox, QFormLayout, QLabel, QPushButton,
+    QSizePolicy, QWidget)
 
 class Ui_Settings(object):
     def setupUi(self, Settings):
@@ -46,13 +46,6 @@ class Ui_Settings(object):
 
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.tagEditorButton)
 
-        self.buttonBox = QDialogButtonBox(Settings)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.buttonBox)
-
         self.label_3 = QLabel(Settings)
         self.label_3.setObjectName(u"label_3")
 
@@ -62,6 +55,23 @@ class Ui_Settings(object):
         self.variableManagerButton.setObjectName(u"variableManagerButton")
 
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.variableManagerButton)
+
+        self.buttonBox = QDialogButtonBox(Settings)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.buttonBox)
+
+        self.showUntaggedCheckBox = QCheckBox(Settings)
+        self.showUntaggedCheckBox.setObjectName(u"showUntaggedCheckBox")
+
+        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.showUntaggedCheckBox)
+
+        self.label_4 = QLabel(Settings)
+        self.label_4.setObjectName(u"label_4")
+
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_4)
 
 
         self.retranslateUi(Settings)
@@ -79,5 +89,7 @@ class Ui_Settings(object):
         self.tagEditorButton.setText(QCoreApplication.translate("Settings", u"Tag editor", None))
         self.label_3.setText(QCoreApplication.translate("Settings", u"Manage variables:", None))
         self.variableManagerButton.setText(QCoreApplication.translate("Settings", u"Variable manager", None))
+        self.showUntaggedCheckBox.setText(QCoreApplication.translate("Settings", u"Show", None))
+        self.label_4.setText(QCoreApplication.translate("Settings", u"Untagged shelf:", None))
     # retranslateUi
 
