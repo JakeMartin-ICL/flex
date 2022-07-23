@@ -13,6 +13,7 @@ from variable_manager import VariableManagerDialog
 from details import DetailsDialog
 from shelf import Shelf
 from name_bar import NameBar
+from create_db import setup_tables
 import queries
 from os import getcwd
 import os
@@ -30,6 +31,9 @@ class MainWindow(QMainWindow):
 
         self.dbcon = sqlite3.connect('index.db')
         self.cur = self.dbcon.cursor()
+        table = self.cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='films'").fetchall()
+        if len(table) == 0:
+            setup_tables(self.cur)
 
         self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionRe_index.triggered.connect(self.reindex)
