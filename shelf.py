@@ -33,7 +33,10 @@ class Shelf(QListWidget):
         self.name = name
         self.direct_query = direct_query
         self.reload(shelf_config)
-        self.setIconSize(QSize(320, 180))
+        picture_size = QSize(320, 180) if "picture_size" not in shelf_config else height_to_qsize(shelf_config["picture_size"])
+        if "picture_size" in shelf_config:
+            self.setMinimumHeight(shelf_config["picture_size"] + 50)
+        self.setIconSize(picture_size)
 
     
     def __len__(self):
@@ -58,7 +61,8 @@ class Shelf(QListWidget):
             list_item.setData(Qt.UserRole, uid)
             self.addItem(list_item)
 
-
+def height_to_qsize(height):
+    return QSize(int(16*(height/9)), height)
 
 def SQLify(filter, limit, shuffle, pictures=False):
     curr = 0

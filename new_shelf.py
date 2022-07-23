@@ -9,6 +9,7 @@ class NewShelfDialog(QDialog):
         self.cur = cur
         self.config = config
 
+        self.ui.verticalLayout.removeItem(self.ui.horizontalLayout_3)
         self.show()
 
         self.load_tags()

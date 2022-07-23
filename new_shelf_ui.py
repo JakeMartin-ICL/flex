@@ -131,6 +131,24 @@ class Ui_NewShelfDialog(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.label_7 = QLabel(NewShelfDialog)
+        self.label_7.setObjectName(u"label_7")
+
+        self.horizontalLayout_3.addWidget(self.label_7)
+
+        self.sizeSpinBox = QSpinBox(NewShelfDialog)
+        self.sizeSpinBox.setObjectName(u"sizeSpinBox")
+        self.sizeSpinBox.setMinimum(90)
+        self.sizeSpinBox.setMaximum(1440)
+        self.sizeSpinBox.setValue(180)
+
+        self.horizontalLayout_3.addWidget(self.sizeSpinBox)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+
         self.buttonBox = QDialogButtonBox(NewShelfDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
@@ -164,5 +182,6 @@ class Ui_NewShelfDialog(object):
         self.label_5.setText(QCoreApplication.translate("NewShelfDialog", u"Limit:", None))
         self.shuffleCheckBox.setText(QCoreApplication.translate("NewShelfDialog", u"Shuffle", None))
         self.picturesCheckBox.setText(QCoreApplication.translate("NewShelfDialog", u"Pictures", None))
+        self.label_7.setText(QCoreApplication.translate("NewShelfDialog", u"Picture size:", None))
     # retranslateUi
 

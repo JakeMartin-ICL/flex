@@ -21,6 +21,9 @@ class EditShelfDialog(QDialog):
         self.ui.filterEdit.setPlainText(shelf_config["filter"])
         self.ui.limitSpinBox.setValue(shelf_config["limit"])
         self.ui.shuffleCheckBox.setChecked(shelf_config["shuffle"])
+        self.pictures = shelf_config["pictures"]
+        self.ui.picturesCheckBox.setChecked(self.pictures)
+        self.ui.sizeSpinBox.setValue(180 if "picture_size" not in shelf_config else shelf_config["picture_size"])
         #self.ui.buttonBox.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Discard | QDialogButtonBox.C)
         self.ui.buttonBox.button(QDialogButtonBox.Cancel).setText("Delete")
 
@@ -29,6 +32,7 @@ class EditShelfDialog(QDialog):
         self.ui.varTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.ui.buttonBox.accepted.connect(self.edit_filter)
         self.ui.buttonBox.rejected.connect(self.delete_filter)
+        self.ui.sizeSpinBox.valueChanged.connect(self.change_size)
         
         self.sql_label = QLabel("Generated SQL:")
         self.sql_browser = QTextBrowser()
@@ -60,7 +64,11 @@ class EditShelfDialog(QDialog):
     def edit_filter(self):
         self.delete_filter()
         pictures = self.ui.picturesCheckBox.checkState() == 2
-        self.config["shelves"][self.ui.nameEdit.text()] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2, "pictures" : pictures}
+        self.config["shelves"][self.ui.nameEdit.text()] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2, "pictures" : pictures, "picture_size": self.ui.sizeSpinBox.value()}
+
+    def change_size(self, value):
+        pictures = self.ui.picturesCheckBox.checkState() == 2
+        self.config["shelves"][self.ui.nameEdit.text()] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2, "pictures" : pictures, "picture_size": value}
     
     def delete_filter(self):
         del self.config["shelves"][self.name]
