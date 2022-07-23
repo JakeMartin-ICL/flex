@@ -54,40 +54,49 @@ class MainWindow(QMainWindow):
             self.ui.listWidget.addItem(list_item)
         
         self.ui.listWidget.itemClicked.connect(self.video_clicked)
-        self.ui.listWidget.customContextMenuRequested.connect(lambda loc, bar=self.ui.listWidget : self.open_details(loc, bar))
+        self.ui.listWidget.customContextMenuRequested.connect(lambda loc, bar=self.ui.listWidget : self.open_details(loc, bar, False))
 
         self.shelves = {}
         self.load_shelves()
 
     def load_shelves(self):
+        self.new_direct_query_shelf("Random Pictures", queries.random_pics, pictures=True)
+
         if self.config["show_untagged"]:
             self.new_direct_query_shelf("Untagged Files", queries.untagged)
         
         for shelf_name in self.config["order"]:
-            self.new_shelf(shelf_name)
+            self.new_shelf(shelf_name, self.config["shelves"][shelf_name]["pictures"])
 
-    def new_direct_query_shelf(self, name, query):
-        shelf_config = {"filter": query, "limit": 1000, "shuffle": False}
+    def new_direct_query_shelf(self, name, query, pictures=False):
+        shelf_config = {"filter": query, "limit": 1000, "shuffle": False, "pictures" : pictures}
         shelf = Shelf(self.cur, name, shelf_config, direct_query=True)
         label = QLabel(f"{name} - {len(shelf)}")
         self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, label)
-        
-        
         self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
-        shelf.itemClicked.connect(self.video_clicked)
-        shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar))
+
+        if pictures:
+            shelf.itemClicked.connect(self.picture_clicked)
+            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, True))
+        else:
+            shelf.itemClicked.connect(self.video_clicked)
+            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, False))
         self.shelves[name] = (label, shelf)
     
-    def new_shelf(self, name):
+    def new_shelf(self, name, picture=False):
         shelf_config = self.config["shelves"][name]
         shelf = Shelf(self.cur, name, shelf_config)
         name_bar = NameBar(f"{name} - {len(shelf)}")
         self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, name_bar)
         name_bar.shelfToolButton.clicked.connect(lambda test=True, name=name : self.open_edit_shelf_dialog(test, name))
-
         self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
-        shelf.itemClicked.connect(self.video_clicked)
-        shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar))
+
+        if picture:
+            shelf.itemClicked.connect(self.picture_clicked)
+            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, True))
+        else:
+            shelf.itemClicked.connect(self.video_clicked)
+            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, False))
         self.shelves[name] = (name_bar, shelf)
 
 
@@ -95,10 +104,22 @@ class MainWindow(QMainWindow):
         uid = item.data(QtCore.Qt.UserRole)
         (path, ) = self.cur.execute("SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
         subprocess.Popen(["C:/Program Files/VideoLAN/VLC/vlc.exe", f"file:///{path}"])
+    
+    def picture_clicked(self, item):
+        uid = item.data(QtCore.Qt.UserRole)
+        (path, ) = self.cur.execute("SELECT path FROM pictures WHERE uid = ?", (uid,)).fetchone()
+        if sys.platform.startswith('linux'):
+            subprocess.call(['xdg-open', path])
 
-    def open_details(self, loc, bar):
+        elif sys.platform.startswith('darwin'):
+            subprocess.call(['open', path])
+
+        elif sys.platform.startswith('win'):
+            subprocess.call(['explorer', os.path.abspath(path)])
+
+    def open_details(self, loc, bar, picture):
         item = bar.itemAt(loc)
-        self.details = DetailsDialog(self.cur, item.data(QtCore.Qt.UserRole), item)
+        self.details = DetailsDialog(self.cur, item.data(QtCore.Qt.UserRole), item, picture)
         if self.details.exec() == QDialog.Accepted:
             self.dbcon.commit()
         else:
@@ -110,7 +131,7 @@ class MainWindow(QMainWindow):
             self.config = self.new_shelf_dialog.get_config()
             self.save_config()
             name = list(self.config["shelves"].keys())[-1]
-            self.new_shelf(name)
+            self.new_shelf(name, self.config["shelves"][name]["pictures"])
     
     def open_edit_shelf_dialog(self, test, name):
         print(f"T: {test}. n: {name}")
@@ -144,6 +165,7 @@ class MainWindow(QMainWindow):
         # Delete moved or removed films 
         for dbpath in dbpaths:
             if dbpath not in [path for (_, path) in films]:
+                input(f"Confirm deletion of {dbpath}")
                 self.cur.execute("DELETE FROM films WHERE path = ?", (dbpath,))
                 print(f"Removed: {dbpath}")
 
@@ -155,6 +177,19 @@ class MainWindow(QMainWindow):
                 thumb_path = f"{getcwd()}\\thumbnails\\{id}.jpg"
                 subprocess.call(['ffmpeg', '-ss', str(duration//2), '-i', path,  '-vframes', '1', '-vf', 'scale=320:180:force_original_aspect_ratio=decrease,pad=320:180:-1:-1', '-y', thumb_path],
                     stdout=subprocess.DEVNULL)
+                print(f"Added: {path}")
+
+        pictures = findPictures(self.config["search_dir"])
+        dbpaths = [path for (path, ) in self.cur.execute("SELECT path FROM pictures").fetchall()]
+        # Delete moved or removed films 
+        for dbpath in dbpaths:
+            if dbpath not in [path for (_, path) in pictures]:
+                self.cur.execute("DELETE FROM pictures WHERE path = ?", (dbpath,))
+                print(f"Removed: {dbpath}")
+
+        for (name, path) in pictures:
+            if path not in dbpaths:
+                id = self.cur.execute("INSERT into pictures (name, path) VALUES (?, ?) RETURNING uid", (name, path)).fetchone()[0]
                 print(f"Added: {path}")
      
 
@@ -180,7 +215,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
 class DetailsDialog(QDialog):
-    def __init__(self, cur, uid, item):
+    def __init__(self, cur, uid, item, pictures=False):
         super().__init__()
         #super(QDialogButtonBox, self).__init__()
         self.ui = Ui_Details()
@@ -189,7 +224,17 @@ class DetailsDialog(QDialog):
         self.uid = uid
         self.list_item = item
 
-        (name, thumbfrac, self.path, self.duration) = self.cur.execute("SELECT name, thumbfrac, path, duration FROM films WHERE uid = ?", (uid,)).fetchone()
+        self.target = 'picture' if pictures else 'film'
+
+        if pictures:
+            (name, self.path) = self.cur.execute("SELECT name, path FROM pictures WHERE uid = ?", (uid,)).fetchone()
+            self.ui.formLayout.removeRow(self.ui.formLayout.rowCount() - 2)
+        else:
+            (name, thumbfrac, self.path, self.duration) = self.cur.execute("SELECT name, thumbfrac, path, duration FROM films WHERE uid = ?", (uid,)).fetchone()
+            self.ui.thumbPosSlider.setValue(int(thumbfrac*100))
+            self.ui.rethumbButton.clicked.connect(self.rethumb)
+            self.ui.resetThumbSliderButton.clicked.connect(self.reset_thumb)
+
         self.ui.titleBrowser.setText(name)
         self.ui.titleBrowser.setFixedHeight(self.ui.titleBrowser.size().height())
         self.ui.varTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -199,14 +244,12 @@ class DetailsDialog(QDialog):
         self.setup_tags()
         self.setup_vars()
 
-        self.ui.thumbPosSlider.setValue(int(thumbfrac*100))
-        self.ui.rethumbButton.clicked.connect(self.rethumb)
-        self.ui.resetThumbSliderButton.clicked.connect(self.reset_thumb)
+
 
     
     def setup_tags(self):
         self.all_tags = self.cur.execute("SELECT tag, tagid FROM tags").fetchall()
-        self.selected_tags = [tagid for (tagid,) in self.cur.execute("SELECT tags.tagid FROM tags INNER JOIN tagmap ON tags.tagid = tagmap.tagid AND filmid=?", (self.uid,)).fetchall()]
+        self.selected_tags = [tagid for (tagid,) in self.cur.execute(f"SELECT tags.tagid FROM tags INNER JOIN tagmap ON tags.tagid = tagmap.tagid AND {self.target}id=?", (self.uid,)).fetchall()]
         for (tag, tagid) in self.all_tags:
             box = QListWidgetItem(tag)
             box.setFlags(box.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -221,7 +264,7 @@ class DetailsDialog(QDialog):
     
     def setup_vars(self):
         self.all_vars = self.cur.execute("SELECT variable, varid, min, max FROM variables").fetchall()
-        self.selected_vars = dict(self.cur.execute("SELECT variables.varid, varmap.value FROM variables INNER JOIN varmap ON variables.varid = varmap.varid AND filmid=?", (self.uid,)).fetchall())
+        self.selected_vars = dict(self.cur.execute(f"SELECT variables.varid, varmap.value FROM variables INNER JOIN varmap ON variables.varid = varmap.varid AND {self.target}id=?", (self.uid,)).fetchall())
         for (var, varid, min, max) in self.all_vars:
             var_item = QTableWidgetItem(var)
             var_item.setData(QtCore.Qt.UserRole, varid)
@@ -256,24 +299,24 @@ class DetailsDialog(QDialog):
         add_tag = item.checkState() == QtCore.Qt.Checked
         tagid = item.data(QtCore.Qt.UserRole)
         if add_tag:
-            self.cur.execute("INSERT INTO tagmap (tagid, filmid) VALUES (?, ?)", (tagid, self.uid))
+            self.cur.execute(f"INSERT INTO tagmap (tagid, {self.target}id) VALUES (?, ?)", (tagid, self.uid))
         else:
-            self.cur.execute("DELETE FROM tagmap WHERE tagid = ? AND filmid = ?", (tagid, self.uid))
+            self.cur.execute(f"DELETE FROM tagmap WHERE tagid = ? AND {self.target}id = ?", (tagid, self.uid))
 
     def var_changed(self, state, varid, row):
         enable = state == 2
         if enable:
             value = int(self.ui.varTable.item(row, 5).text())
-            self.cur.execute("INSERT INTO varmap (varid, filmid, value) VALUES (?, ?, ?)", (varid, self.uid, value))
+            self.cur.execute(f"INSERT INTO varmap (varid, {self.target}id, value) VALUES (?, ?, ?)", (varid, self.uid, value))
         else:
-            self.cur.execute("DELETE FROM varmap WHERE varid = ? AND filmid = ?", (varid, self.uid))
+            self.cur.execute(f"DELETE FROM varmap WHERE varid = ? AND {self.target}id = ?", (varid, self.uid))
 
     def slider_changed(self, state, varid, row):
         value_item = QTableWidgetItem(str(state))
         self.ui.varTable.setItem(row, 5, value_item)
         checkbox = self.ui.varTable.cellWidget(row, 4)
         if checkbox.checkState() == QtCore.Qt.Checked:
-            self.cur.execute("UPDATE varmap SET value = ? WHERE varid = ? AND filmid = ?", (state, varid, self.uid))
+            self.cur.execute(f"UPDATE varmap SET value = ? WHERE varid = ? AND {self.target}id = ?", (state, varid, self.uid))
         else:
             checkbox.setChecked(True)
     
@@ -376,7 +419,13 @@ class TagManager(QDialog):
 
 def findFilms(folder):
     extensions = ('.avi', '.mkv', '.wmv', '.mp4', '.mpg', '.mpeg', '.mov', '.m4v')
-    matches = []
+    return findFilesWithExtension(folder, extensions)
+
+def findPictures(folder):
+    extensions = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm')
+    return findFilesWithExtension(folder, extensions)
+
+def findFilesWithExtension(folder, extensions):
     return [(fn, os.path.join(r, fn))
         for r, ds, fs in os.walk(folder) 
         for fn in fs if fn.lower().endswith(extensions)]

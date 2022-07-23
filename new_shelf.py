@@ -39,7 +39,8 @@ class NewShelfDialog(QDialog):
     def add_filter(self):
         name = self.ui.nameEdit.text()
         name = name if len(name) > 0 else f'New Shelf {len(self.config["order"])}'
-        self.config["shelves"][name] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2}
+        pictures = self.ui.picturesCheckBox.checkState() == 2
+        self.config["shelves"][name] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2, "pictures" : pictures}
         self.config["order"].append(name)
     
     def get_config(self):

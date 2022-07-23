@@ -19,8 +19,8 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScro
     QCheckBox, QDialog, QDialogButtonBox, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QListView, QListWidget, QListWidgetItem, QPlainTextEdit,
-    QSizePolicy, QSpacerItem, QSpinBox, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+    QSizePolicy, QSpinBox, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 class Ui_NewShelfDialog(object):
     def setupUi(self, NewShelfDialog):
@@ -118,18 +118,15 @@ class Ui_NewShelfDialog(object):
 
         self.horizontalLayout_2.addWidget(self.limitSpinBox)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_2.addItem(self.horizontalSpacer)
-
         self.shuffleCheckBox = QCheckBox(NewShelfDialog)
         self.shuffleCheckBox.setObjectName(u"shuffleCheckBox")
 
         self.horizontalLayout_2.addWidget(self.shuffleCheckBox)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.picturesCheckBox = QCheckBox(NewShelfDialog)
+        self.picturesCheckBox.setObjectName(u"picturesCheckBox")
 
-        self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
+        self.horizontalLayout_2.addWidget(self.picturesCheckBox)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -166,5 +163,6 @@ class Ui_NewShelfDialog(object):
         self.filterEdit.setPlaceholderText(QCoreApplication.translate("NewShelfDialog", u"Eg. ([Action] AND [Horror]) OR ([Drama] AND {Year < 2010})", None))
         self.label_5.setText(QCoreApplication.translate("NewShelfDialog", u"Limit:", None))
         self.shuffleCheckBox.setText(QCoreApplication.translate("NewShelfDialog", u"Shuffle", None))
+        self.picturesCheckBox.setText(QCoreApplication.translate("NewShelfDialog", u"Pictures", None))
     # retranslateUi
 

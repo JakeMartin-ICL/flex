@@ -33,6 +33,7 @@ class Shelf(QListWidget):
         self.name = name
         self.direct_query = direct_query
         self.reload(shelf_config)
+        self.setIconSize(QSize(320, 180))
 
     
     def __len__(self):
@@ -43,25 +44,27 @@ class Shelf(QListWidget):
         self.filter = shelf_config["filter"]
         self.limit = shelf_config["limit"]
         self.shuffle = shelf_config["shuffle"]
-        self.SQL = SQLify(self.filter, self.limit, self.shuffle) if not self.direct_query else self.filter
+        self.pictures = shelf_config["pictures"]
+        self.SQL = SQLify(self.filter, self.limit, self.shuffle, self.pictures) if not self.direct_query else self.filter
         print(self.SQL)
 
 
         results = self.cur.execute(self.SQL).fetchall()
         self.len = len(results)
-        for (uid, name) in results:
+        for (uid, name, path) in results:
             name = (name[:50] + '..') if len(name) > 75 else name
-            list_item = QListWidgetItem(
-                QIcon(f"{getcwd()}/thumbnails/{uid}.jpg"), name)
+            icon_path = path if self.pictures else f"{getcwd()}/thumbnails/{uid}.jpg"
+            list_item = QListWidgetItem(QIcon(icon_path), name)
             list_item.setData(Qt.UserRole, uid)
             self.addItem(list_item)
 
 
 
-def SQLify(filter, limit, shuffle):
+def SQLify(filter, limit, shuffle, pictures=False):
     curr = 0
     negate = False
-    query = 'SELECT DISTINCT uid, name FROM films LEFT JOIN tagmap ON films.uid = tagmap.filmid LEFT JOIN tags ON tags.tagid = tagmap.tagid LEFT JOIN varmap ON films.uid = varmap.filmid LEFT JOIN variables ON varmap.varid = variables.varid WHERE ('
+    target = 'picture' if pictures else 'film'
+    query = f'SELECT DISTINCT uid, name, path FROM {target}s LEFT JOIN tagmap ON {target}s.uid = tagmap.{target}id LEFT JOIN tags ON tags.tagid = tagmap.tagid LEFT JOIN varmap ON {target}s.uid = varmap.{target}id LEFT JOIN variables ON varmap.varid = variables.varid WHERE ('
     end_tag_chars = [' ', '<', '>', '=']
     while curr < len(filter):
         char = filter[curr]

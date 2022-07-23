@@ -59,7 +59,8 @@ class EditShelfDialog(QDialog):
     
     def edit_filter(self):
         self.delete_filter()
-        self.config["shelves"][self.ui.nameEdit.text()] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2}
+        pictures = self.ui.picturesCheckBox.checkState() == 2
+        self.config["shelves"][self.ui.nameEdit.text()] = {"filter": self.ui.filterEdit.toPlainText(), "limit": self.ui.limitSpinBox.value(), "shuffle": self.ui.shuffleCheckBox.checkState() == 2, "pictures" : pictures}
     
     def delete_filter(self):
         del self.config["shelves"][self.name]
