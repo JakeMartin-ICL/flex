@@ -1,19 +1,20 @@
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
+                            QMetaObject, QObject, QPoint, QRect,
+                            QSize, QTime, QUrl, Qt)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
+                           QFont, QFontDatabase, QGradient, QIcon,
+                           QImage, QKeySequence, QLinearGradient, QPainter,
+                           QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScrollArea, QApplication,
-    QDialog, QDialogButtonBox, QFormLayout, QHBoxLayout,
-    QHeaderView, QLabel, QListView, QListWidget,
-    QListWidgetItem, QPushButton, QRadioButton, QSizePolicy,
-    QSlider, QTableWidget, QTableWidgetItem, QTextBrowser,
-    QWidget, QCheckBox, QFileDialog)
+                               QDialog, QDialogButtonBox, QFormLayout, QHBoxLayout,
+                               QHeaderView, QLabel, QListView, QListWidget,
+                               QListWidgetItem, QPushButton, QRadioButton, QSizePolicy,
+                               QSlider, QTableWidget, QTableWidgetItem, QTextBrowser,
+                               QWidget, QCheckBox, QFileDialog)
 from ui.settings_ui import Ui_Settings
 from variable_manager import VariableManager
 from tag_manager import TagManager
+
 
 class SettingsDialog(QDialog):
     def __init__(self, cur, dbcon, config):
@@ -37,14 +38,14 @@ class SettingsDialog(QDialog):
 
     def browse_files(self):
         self.config["search_dir"] = QFileDialog.getExistingDirectory()
-    
+
     def open_tag_manager(self):
         self.tag_manager = TagManager(self.cur)
         if self.tag_manager.exec() == QDialog.Accepted:
             self.dbcon.commit()
         else:
             self.dbcon.rollback()
-    
+
     def open_var_manager(self):
         self.tag_manager = VariableManager(self.cur)
         if self.tag_manager.exec() == QDialog.Accepted:

@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (QApplication, QLabel, QListView, QListWidget,
 from os import getcwd
 from query_parser import SQLify
 
+
 class Shelf(QListWidget):
     def __init__(self, cur, name, shelf_config, direct_query=False):
         super().__init__()
@@ -33,12 +34,12 @@ class Shelf(QListWidget):
         self.name = name
         self.direct_query = direct_query
         self.reload(shelf_config)
-        picture_size = QSize(320, 180) if "picture_size" not in shelf_config else height_to_qsize(shelf_config["picture_size"])
+        picture_size = QSize(320, 180) if "picture_size" not in shelf_config else height_to_qsize(
+            shelf_config["picture_size"])
         if "picture_size" in shelf_config:
             self.setMinimumHeight(shelf_config["picture_size"] + 50)
         self.setIconSize(picture_size)
 
-    
     def __len__(self):
         return self.len
 
@@ -48,9 +49,9 @@ class Shelf(QListWidget):
         self.limit = shelf_config["limit"]
         self.shuffle = shelf_config["shuffle"]
         self.pictures = shelf_config["pictures"]
-        self.SQL = SQLify(self.filter, self.limit, self.shuffle, self.pictures) if not self.direct_query else self.filter
+        self.SQL = SQLify(self.filter, self.limit, self.shuffle,
+                          self.pictures) if not self.direct_query else self.filter
         print(self.SQL)
-
 
         results = self.cur.execute(self.SQL).fetchall()
         self.len = len(results)
@@ -60,6 +61,7 @@ class Shelf(QListWidget):
             list_item = QListWidgetItem(QIcon(icon_path), name)
             list_item.setData(Qt.UserRole, uid)
             self.addItem(list_item)
+
 
 def height_to_qsize(height):
     return QSize(int(16*(height/9)), height)

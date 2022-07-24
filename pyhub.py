@@ -18,6 +18,7 @@ import subprocess
 from pymediainfo import MediaInfo
 import time
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -26,7 +27,8 @@ class MainWindow(QMainWindow):
 
         self.dbcon = sqlite3.connect('index.db')
         self.cur = self.dbcon.cursor()
-        table = self.cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='films'").fetchall()
+        table = self.cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='films'").fetchall()
         if len(table) == 0:
             setup_tables(self.cur)
 
@@ -36,78 +38,95 @@ class MainWindow(QMainWindow):
         reload.triggered.connect(self.reload)
 
         self.ui.newShelfButton.clicked.connect(self.open_new_shelf_dialog)
-        
+
         try:
             with open("config.json", 'r') as config_file:
                 self.config = json.load(config_file)
         except:
-            self.config = {"search_dir" : getcwd(), "shelves" : {}, "show_untagged" : True}
+            self.config = {"search_dir": getcwd(), "shelves": {},
+                           "show_untagged": True}
             with open("config.json", 'w') as new_config:
                 json.dump(self.config, new_config)
-        
-        
-        random10 = self.cur.execute("SELECT uid, name, path FROM films ORDER BY RANDOM() LIMIT 10").fetchall()
+
+        random10 = self.cur.execute(
+            "SELECT uid, name, path FROM films ORDER BY RANDOM() LIMIT 10").fetchall()
         for (uid, name, _) in random10:
             name = (name[:50] + '..') if len(name) > 75 else name
-            list_item = QListWidgetItem(QtGui.QIcon(f"{getcwd()}/thumbnails/{uid}.jpg"), name)
+            list_item = QListWidgetItem(QtGui.QIcon(
+                f"{getcwd()}/thumbnails/{uid}.jpg"), name)
             list_item.setData(QtCore.Qt.UserRole, uid)
             self.ui.listWidget.addItem(list_item)
-        
+
         self.ui.listWidget.itemClicked.connect(self.video_clicked)
-        self.ui.listWidget.customContextMenuRequested.connect(lambda loc, bar=self.ui.listWidget : self.open_details(loc, bar, False))
+        self.ui.listWidget.customContextMenuRequested.connect(
+            lambda loc, bar=self.ui.listWidget: self.open_details(loc, bar, False))
 
         self.shelves = {}
         self.load_shelves()
 
     def load_shelves(self):
-        self.new_direct_query_shelf("Random Pictures", queries.random_pics, pictures=True)
+        self.new_direct_query_shelf(
+            "Random Pictures", queries.random_pics, pictures=True)
 
         if self.config["show_untagged"]:
             self.new_direct_query_shelf("Untagged Files", queries.untagged)
-        
+
         for shelf_name in self.config["order"]:
-            self.new_shelf(shelf_name, self.config["shelves"][shelf_name]["pictures"])
+            self.new_shelf(
+                shelf_name, self.config["shelves"][shelf_name]["pictures"])
 
     def new_direct_query_shelf(self, name, query, pictures=False):
-        shelf_config = {"filter": query, "limit": 1000, "shuffle": False, "pictures" : pictures}
+        shelf_config = {"filter": query, "limit": 1000,
+                        "shuffle": False, "pictures": pictures}
         shelf = Shelf(self.cur, name, shelf_config, direct_query=True)
         label = QLabel(f"{name} - {len(shelf)}")
-        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, label)
-        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
+        self.ui.scrollAreaLayout.insertWidget(
+            self.ui.scrollAreaLayout.count() - 2, label)
+        self.ui.scrollAreaLayout.insertWidget(
+            self.ui.scrollAreaLayout.count() - 2, shelf)
 
         if pictures:
             shelf.itemClicked.connect(self.picture_clicked)
-            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, True))
+            shelf.customContextMenuRequested.connect(
+                lambda loc, bar=shelf: self.open_details(loc, bar, True))
         else:
             shelf.itemClicked.connect(self.video_clicked)
-            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, False))
+            shelf.customContextMenuRequested.connect(
+                lambda loc, bar=shelf: self.open_details(loc, bar, False))
         self.shelves[name] = (label, shelf)
-    
+
     def new_shelf(self, name, picture=False):
         shelf_config = self.config["shelves"][name]
         shelf = Shelf(self.cur, name, shelf_config)
         name_bar = NameBar(f"{name} - {len(shelf)}")
-        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, name_bar)
-        name_bar.shelfToolButton.clicked.connect(lambda test=True, name=name : self.open_edit_shelf_dialog(test, name))
-        self.ui.scrollAreaLayout.insertWidget(self.ui.scrollAreaLayout.count() - 2, shelf)
+        self.ui.scrollAreaLayout.insertWidget(
+            self.ui.scrollAreaLayout.count() - 2, name_bar)
+        name_bar.shelfToolButton.clicked.connect(
+            lambda test=True, name=name: self.open_edit_shelf_dialog(test, name))
+        self.ui.scrollAreaLayout.insertWidget(
+            self.ui.scrollAreaLayout.count() - 2, shelf)
 
         if picture:
             shelf.itemClicked.connect(self.picture_clicked)
-            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, True))
+            shelf.customContextMenuRequested.connect(
+                lambda loc, bar=shelf: self.open_details(loc, bar, True))
         else:
             shelf.itemClicked.connect(self.video_clicked)
-            shelf.customContextMenuRequested.connect(lambda loc, bar=shelf : self.open_details(loc, bar, False))
+            shelf.customContextMenuRequested.connect(
+                lambda loc, bar=shelf: self.open_details(loc, bar, False))
         self.shelves[name] = (name_bar, shelf)
-
 
     def video_clicked(self, item):
         uid = item.data(QtCore.Qt.UserRole)
-        (path, ) = self.cur.execute("SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
-        subprocess.Popen(["C:/Program Files/VideoLAN/VLC/vlc.exe", f"file:///{path}"])
-    
+        (path, ) = self.cur.execute(
+            "SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
+        subprocess.Popen(
+            ["C:/Program Files/VideoLAN/VLC/vlc.exe", f"file:///{path}"])
+
     def picture_clicked(self, item):
         uid = item.data(QtCore.Qt.UserRole)
-        (path, ) = self.cur.execute("SELECT path FROM pictures WHERE uid = ?", (uid,)).fetchone()
+        (path, ) = self.cur.execute(
+            "SELECT path FROM pictures WHERE uid = ?", (uid,)).fetchone()
         if sys.platform.startswith('linux'):
             subprocess.call(['xdg-open', path])
 
@@ -119,7 +138,8 @@ class MainWindow(QMainWindow):
 
     def open_details(self, loc, bar, picture):
         item = bar.itemAt(loc)
-        self.details = DetailsDialog(self.cur, item.data(QtCore.Qt.UserRole), item, picture)
+        self.details = DetailsDialog(
+            self.cur, item.data(QtCore.Qt.UserRole), item, picture)
         if self.details.exec() == QDialog.Accepted:
             self.dbcon.commit()
         else:
@@ -132,7 +152,7 @@ class MainWindow(QMainWindow):
             self.save_config()
             name = list(self.config["shelves"].keys())[-1]
             self.new_shelf(name, self.config["shelves"][name]["pictures"])
-    
+
     def open_edit_shelf_dialog(self, test, name):
         print(f"T: {test}. n: {name}")
         self.edit_shelf_dialog = EditShelfDialog(self.cur, self.config, name)
@@ -148,7 +168,7 @@ class MainWindow(QMainWindow):
             del self.shelves[name]
         else:
             self.shelves[name][1].reload(self.config["shelves"][name])
-    
+
     def reload(self):
         for (name_bar, shelf) in self.shelves.values():
             self.ui.scrollAreaLayout.removeWidget(name_bar)
@@ -161,8 +181,9 @@ class MainWindow(QMainWindow):
     def reindex(self):
         start = time.time()
         films = findFilms(self.config["search_dir"])
-        dbpaths = [path for (path, ) in self.cur.execute("SELECT path from films").fetchall()]
-        # Delete moved or removed films 
+        dbpaths = [path for (path, ) in self.cur.execute(
+            "SELECT path from films").fetchall()]
+        # Delete moved or removed films
         for dbpath in dbpaths:
             if dbpath not in [path for (_, path) in films]:
                 self.cur.execute("DELETE FROM films WHERE path = ?", (dbpath,))
@@ -175,18 +196,21 @@ class MainWindow(QMainWindow):
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
                 size = os.path.getsize(path)
-                id = self.cur.execute("INSERT into films (name, path, duration, added, accessed, size) VALUES (?, ?, ?, ?, ?, ?) RETURNING uid", (name, path, duration, added, accessed, size)).fetchone()[0]
+                id = self.cur.execute("INSERT into films (name, path, duration, added, accessed, size) VALUES (?, ?, ?, ?, ?, ?) RETURNING uid", (
+                    name, path, duration, added, accessed, size)).fetchone()[0]
                 thumb_path = f"{getcwd()}\\thumbnails\\{id}.jpg"
                 subprocess.call(['ffmpeg', '-ss', str(duration//2), '-i', path,  '-vframes', '1', '-vf', 'scale=320:180:force_original_aspect_ratio=decrease,pad=320:180:-1:-1', '-y', thumb_path],
-                    stdout=subprocess.DEVNULL)
+                                stdout=subprocess.DEVNULL)
                 print(f"Added: {path}")
 
         pictures = findPictures(self.config["search_dir"])
-        dbpaths = [path for (path, ) in self.cur.execute("SELECT path FROM pictures").fetchall()]
-        # Delete moved or removed films 
+        dbpaths = [path for (path, ) in self.cur.execute(
+            "SELECT path FROM pictures").fetchall()]
+        # Delete moved or removed films
         for dbpath in dbpaths:
             if dbpath not in [path for (_, path) in pictures]:
-                self.cur.execute("DELETE FROM pictures WHERE path = ?", (dbpath,))
+                self.cur.execute(
+                    "DELETE FROM pictures WHERE path = ?", (dbpath,))
                 print(f"Removed: {dbpath}")
 
         for (name, path) in pictures:
@@ -194,9 +218,9 @@ class MainWindow(QMainWindow):
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
                 size = os.path.getsize(path)
-                id = self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?) RETURNING uid", (name, path, added, accessed, size)).fetchone()[0]
+                id = self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?) RETURNING uid", (
+                    name, path, added, accessed, size)).fetchone()[0]
                 print(f"Added: {path}")
-     
 
         print(f"Database reindexed in {time.time() - start}")
         self.dbcon.commit()
@@ -208,12 +232,11 @@ class MainWindow(QMainWindow):
             self.config = self.settings_w.get_config()
             self.save_config()
 
-    
     def save_config(self):
         print(f"New config! {self.config}")
         with open("config.json", 'w') as config_file:
             json.dump(self.config, config_file)
-    
+
     def closeEvent(self, event):
         print("Safely closing")
         self.dbcon.close()
@@ -221,25 +244,31 @@ class MainWindow(QMainWindow):
 
 
 def findFilms(folder):
-    extensions = ('.avi', '.mkv', '.wmv', '.mp4', '.mpg', '.mpeg', '.mov', '.m4v')
+    extensions = ('.avi', '.mkv', '.wmv', '.mp4',
+                  '.mpg', '.mpeg', '.mov', '.m4v')
     return findFilesWithExtension(folder, extensions)
 
+
 def findPictures(folder):
-    extensions = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm', '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm')
+    extensions = ('.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg', '.xpm', '.ief',
+                  '.pbm', '.tif', '.gif', '.ppm', '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm')
     return findFilesWithExtension(folder, extensions)
+
 
 def findFilesWithExtension(folder, extensions):
     return [(fn, os.path.abspath(os.path.join(r, fn)))
-        for r, ds, fs in os.walk(folder) 
-        for fn in fs if fn.lower().endswith(extensions)]
+            for r, ds, fs in os.walk(folder)
+            for fn in fs if fn.lower().endswith(extensions)]
+
 
 def get_length(path):
     result = subprocess.run(["ffprobe", "-v", "quiet", "-show_entries",
                              "format=duration", "-of",
                              "default=noprint_wrappers=1:nokey=1", path],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
     return int(float(result.stdout))
+
 
 app = QtWidgets.QApplication(sys.argv)
 file = QtCore.QFile("./ui/stylesheets/stylesheet.qss")
@@ -249,4 +278,3 @@ app.setStyleSheet(stream.readAll())
 window = MainWindow()
 window.show()
 app.exec()
-

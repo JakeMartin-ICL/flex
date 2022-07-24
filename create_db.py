@@ -43,6 +43,7 @@ varmap = """CREATE TABLE "varmap" (
 	FOREIGN KEY("filmid") REFERENCES "films"("uid") ON DELETE CASCADE,
 	FOREIGN KEY("varid") REFERENCES "varmap"("varid") ON DELETE CASCADE)"""
 
+
 def setup_tables(cur):
     cur.execute(films)
     cur.execute(pictures)

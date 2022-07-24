@@ -5,7 +5,8 @@ markers = ('|', '[', ']', '{', '}')
 special_chars = comparators + markers
 special_vars = ('added, accessed, size')
 time_format = '%d/%m/%Y'
-size_pow = {'kb' : 1, 'mb' : 2, 'gb' : 3}
+size_pow = {'kb': 1, 'mb': 2, 'gb': 3}
+
 
 def SQLify(filter, limit, shuffle, pictures=False):
     curr = 0
@@ -38,8 +39,9 @@ def SQLify(filter, limit, shuffle, pictures=False):
         else:
             query += char
         curr += 1
-        
+
     return query + f'){" ORDER BY RANDOM()" if shuffle else ""} LIMIT {limit} '
+
 
 def get_comparator(filter, curr):
     comparator = ''
@@ -53,6 +55,7 @@ def get_comparator(filter, curr):
         else:
             return (comparator, curr)
 
+
 def get_token(filter, curr):
     token = ''
     while True:
@@ -62,6 +65,7 @@ def get_token(filter, curr):
             curr += 1
         else:
             return (token.strip(), curr)
+
 
 def handle_special_value(var, value):
     if var == 'added' or var == 'accessed':
