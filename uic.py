@@ -1,5 +1,6 @@
 import os
 import subprocess
+
 for (_, _, ui_files) in os.walk('ui/xml'):
     for ui_file in ui_files:
         name = ui_file[:-3]

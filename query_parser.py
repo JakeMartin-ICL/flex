@@ -1,4 +1,4 @@
-from time import strptime, mktime
+from time import mktime, strptime
 
 comparators = ('=', '<', '>', '!')
 markers = ('|', '[', ']', '{', '}')

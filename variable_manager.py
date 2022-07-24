@@ -1,5 +1,6 @@
+from PySide6.QtWidgets import QDialog, QHeaderView, QTableWidgetItem
+
 from ui.variable_manager_ui import Ui_VariableManager
-from PySide6.QtWidgets import *
 
 
 class VariableManager(QDialog):

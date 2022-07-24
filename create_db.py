@@ -1,5 +1,3 @@
-import sqlite3
-
 films = """CREATE TABLE "films" (
 	"uid"	INTEGER NOT NULL UNIQUE,
 	"name"	TEXT NOT NULL ,

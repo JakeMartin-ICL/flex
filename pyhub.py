@@ -1,22 +1,24 @@
-import sys
-from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtWidgets import *
-from ui.main_ui import Ui_MainWindow
-from new_shelf import NewShelfDialog
-from edit_shelf import EditShelfDialog
-from details import DetailsDialog
-from settings import SettingsDialog
-from shelf import Shelf
-from name_bar import NameBar
-from create_db import setup_tables
-import queries
-from os import getcwd
-import os
 import json
+import os
 import sqlite3
 import subprocess
-from pymediainfo import MediaInfo
+import sys
 import time
+from os import getcwd
+
+from pymediainfo import MediaInfo
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtWidgets import *
+
+import queries
+from create_db import setup_tables
+from details import DetailsDialog
+from edit_shelf import EditShelfDialog
+from name_bar import NameBar
+from new_shelf import NewShelfDialog
+from settings import SettingsDialog
+from shelf import Shelf
+from ui.main_ui import Ui_MainWindow
 
 
 class MainWindow(QMainWindow):
