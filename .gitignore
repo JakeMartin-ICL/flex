@@ -1,3 +1,4 @@
 thumbnails/*
-*.ui
 *.pyc
+*.db
+*.json
