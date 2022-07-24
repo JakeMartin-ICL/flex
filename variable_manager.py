@@ -1,7 +1,7 @@
-from variablemanager import Ui_VariableManager
+from ui.variable_manager_ui import Ui_VariableManager
 from PySide6.QtWidgets import *
 
-class VariableManagerDialog(QDialog):
+class VariableManager(QDialog):
     def __init__(self, cur):
         super().__init__()
         self.ui = Ui_VariableManager()

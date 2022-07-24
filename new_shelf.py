@@ -1,4 +1,4 @@
-from new_shelf_ui import Ui_NewShelfDialog
+from ui.new_shelf_ui import Ui_NewShelfDialog
 from PySide6.QtWidgets import *
 
 class NewShelfDialog(QDialog):

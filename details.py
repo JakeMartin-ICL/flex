@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScro
     QListWidgetItem, QPushButton, QRadioButton, QSizePolicy,
     QSlider, QTableWidget, QTableWidgetItem, QTextBrowser,
     QWidget, QCheckBox)
-from details_ui import Ui_Details
+from ui.details_ui import Ui_Details
 import subprocess
 from os import getcwd
 import os

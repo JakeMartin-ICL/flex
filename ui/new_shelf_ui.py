@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'newshelf.ui'
+## Form generated from reading UI file 'new_shelf.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.3.1
 ##

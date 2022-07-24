@@ -1,11 +1,9 @@
-from requests import delete
-from new_shelf_ui import Ui_NewShelfDialog
+from ui.new_shelf_ui import Ui_NewShelfDialog
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
 from PySide6.QtWidgets import *
-from shelf import Shelf
-from shelf import SQLify
+from query_parser import SQLify
 
 class EditShelfDialog(QDialog):
     def __init__(self, cur, config, name):

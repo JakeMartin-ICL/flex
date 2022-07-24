@@ -1,16 +1,11 @@
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import *
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtGui import QAction, QIcon
-from mainwindow import Ui_MainWindow
+from ui.main_ui import Ui_MainWindow
 from new_shelf import NewShelfDialog
 from edit_shelf import EditShelfDialog
-from settings import Ui_Settings
-from detailswindow import Ui_Details
-from tagmanager import Ui_TagManager
-from variable_manager import VariableManagerDialog
 from details import DetailsDialog
+from settings import SettingsDialog
 from shelf import Shelf
 from name_bar import NameBar
 from create_db import setup_tables
@@ -225,88 +220,6 @@ class MainWindow(QMainWindow):
         event.accept()
 
 
-class SettingsDialog(QDialog):
-    def __init__(self, cur, dbcon, config):
-        super().__init__()
-        self.ui = Ui_Settings()
-        self.ui.setupUi(self)
-        self.cur = cur
-        self.dbcon = dbcon
-        self.ui.browseFiles.clicked.connect(self.browse_files)
-        self.ui.tagEditorButton.clicked.connect(self.open_tag_manager)
-        self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
-        self.ui.showUntaggedCheckBox.setChecked(config["show_untagged"])
-        self.ui.showUntaggedCheckBox.stateChanged.connect(self.show_untagged)
-
-        for name, shelf_config in config["shelves"].items():
-            item = QListWidgetItem(name)
-            self.ui.orderList.addItem(item)
-        self.ui.orderList.model().rowsMoved.connect(self.update_order)
-
-        self.config = config
-
-    def browse_files(self):
-        self.config["search_dir"] = QFileDialog.getExistingDirectory()
-    
-    def open_tag_manager(self):
-        self.tag_manager = TagManager(self.cur)
-        if self.tag_manager.exec() == QDialog.Accepted:
-            self.dbcon.commit()
-        else:
-            self.dbcon.rollback()
-    
-    def open_var_manager(self):
-        self.tag_manager = VariableManagerDialog(self.cur)
-        if self.tag_manager.exec() == QDialog.Accepted:
-            self.dbcon.commit()
-        else:
-            self.dbcon.rollback()
-
-    def show_untagged(self, state):
-        show = state == 2
-        self.config["show_untagged"] = show
-
-    def update_order(self):
-        new_order = []
-        for i in range(self.ui.orderList.count()):
-            name = self.ui.orderList.item(i).text()
-            new_order.append(name)
-        self.config["order"] = new_order
-
-    def get_config(self):
-        return self.config
-
-class TagManager(QDialog):
-    def __init__(self, cur):
-        super().__init__()
-        self.ui = Ui_TagManager()
-        self.ui.setupUi(self)
-        self.cur = cur
-
-        self.load_tags()
-
-        self.ui.addButton.clicked.connect(self.add_tag)
-        self.ui.removeButton.clicked.connect(self.remove_tag)
-        self.show()
-    
-    def load_tags(self):
-        self.tags = [tag for (tag, ) in self.cur.execute("SELECT tag from tags").fetchall()]
-        self.ui.listWidget.addItems(self.tags)
-
-    def add_tag(self):
-        new_tag = self.ui.lineEdit.text()
-        self.cur.execute("INSERT INTO tags (tag) VALUES (?)", (new_tag,))
-        self.ui.listWidget.addItem(new_tag)
-        self.ui.lineEdit.clear()
-
-    def remove_tag(self):
-        tags = self.ui.listWidget.selectedItems()
-        for tag in tags:
-            self.cur.execute("DELETE FROM tags WHERE tag = ?", (tag.text(),))
-        self.ui.listWidget.clear()
-        self.load_tags()
-
-
 def findFilms(folder):
     extensions = ('.avi', '.mkv', '.wmv', '.mp4', '.mpg', '.mpeg', '.mov', '.m4v')
     return findFilesWithExtension(folder, extensions)
@@ -329,8 +242,7 @@ def get_length(path):
     return int(float(result.stdout))
 
 app = QtWidgets.QApplication(sys.argv)
-#app.setStyleSheet("QLabel{font-size: 18pt;}")
-file = QtCore.QFile("./stylesheet.qss")
+file = QtCore.QFile("./ui/stylesheets/stylesheet.qss")
 file.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text)
 stream = QtCore.QTextStream(file)
 app.setStyleSheet(stream.readAll())

@@ -1,13 +1,3 @@
-# -*- coding: utf-8 -*-
-
-################################################################################
-## Form generated from reading UI file 'settings.ui'
-##
-## Created by: Qt User Interface Compiler version 6.3.1
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -15,96 +5,63 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
-    QDialog, QDialogButtonBox, QFormLayout, QLabel,
-    QListWidget, QListWidgetItem, QPushButton, QSizePolicy,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScrollArea, QApplication,
+    QDialog, QDialogButtonBox, QFormLayout, QHBoxLayout,
+    QHeaderView, QLabel, QListView, QListWidget,
+    QListWidgetItem, QPushButton, QRadioButton, QSizePolicy,
+    QSlider, QTableWidget, QTableWidgetItem, QTextBrowser,
+    QWidget, QCheckBox, QFileDialog)
+from ui.settings_ui import Ui_Settings
+from variable_manager import VariableManager
+from tag_manager import TagManager
 
-class Ui_Settings(object):
-    def setupUi(self, Settings):
-        if not Settings.objectName():
-            Settings.setObjectName(u"Settings")
-        Settings.resize(665, 378)
-        self.formLayout = QFormLayout(Settings)
-        self.formLayout.setObjectName(u"formLayout")
-        self.label = QLabel(Settings)
-        self.label.setObjectName(u"label")
+class SettingsDialog(QDialog):
+    def __init__(self, cur, dbcon, config):
+        super().__init__()
+        self.ui = Ui_Settings()
+        self.ui.setupUi(self)
+        self.cur = cur
+        self.dbcon = dbcon
+        self.ui.browseFiles.clicked.connect(self.browse_files)
+        self.ui.tagEditorButton.clicked.connect(self.open_tag_manager)
+        self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
+        self.ui.showUntaggedCheckBox.setChecked(config["show_untagged"])
+        self.ui.showUntaggedCheckBox.stateChanged.connect(self.show_untagged)
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
+        for name, shelf_config in config["shelves"].items():
+            item = QListWidgetItem(name)
+            self.ui.orderList.addItem(item)
+        self.ui.orderList.model().rowsMoved.connect(self.update_order)
 
-        self.browseFiles = QPushButton(Settings)
-        self.browseFiles.setObjectName(u"browseFiles")
+        self.config = config
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.browseFiles)
+    def browse_files(self):
+        self.config["search_dir"] = QFileDialog.getExistingDirectory()
+    
+    def open_tag_manager(self):
+        self.tag_manager = TagManager(self.cur)
+        if self.tag_manager.exec() == QDialog.Accepted:
+            self.dbcon.commit()
+        else:
+            self.dbcon.rollback()
+    
+    def open_var_manager(self):
+        self.tag_manager = VariableManager(self.cur)
+        if self.tag_manager.exec() == QDialog.Accepted:
+            self.dbcon.commit()
+        else:
+            self.dbcon.rollback()
 
-        self.label_2 = QLabel(Settings)
-        self.label_2.setObjectName(u"label_2")
+    def show_untagged(self, state):
+        show = state == 2
+        self.config["show_untagged"] = show
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_2)
+    def update_order(self):
+        new_order = []
+        for i in range(self.ui.orderList.count()):
+            name = self.ui.orderList.item(i).text()
+            new_order.append(name)
+        self.config["order"] = new_order
 
-        self.tagEditorButton = QPushButton(Settings)
-        self.tagEditorButton.setObjectName(u"tagEditorButton")
-
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.tagEditorButton)
-
-        self.label_3 = QLabel(Settings)
-        self.label_3.setObjectName(u"label_3")
-
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.label_3)
-
-        self.variableManagerButton = QPushButton(Settings)
-        self.variableManagerButton.setObjectName(u"variableManagerButton")
-
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.variableManagerButton)
-
-        self.showUntaggedCheckBox = QCheckBox(Settings)
-        self.showUntaggedCheckBox.setObjectName(u"showUntaggedCheckBox")
-
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.showUntaggedCheckBox)
-
-        self.label_4 = QLabel(Settings)
-        self.label_4.setObjectName(u"label_4")
-
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.label_4)
-
-        self.buttonBox = QDialogButtonBox(Settings)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.buttonBox)
-
-        self.label_5 = QLabel(Settings)
-        self.label_5.setObjectName(u"label_5")
-
-        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.label_5)
-
-        self.orderList = QListWidget(Settings)
-        self.orderList.setObjectName(u"orderList")
-        self.orderList.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.orderList.setDragEnabled(True)
-        self.orderList.setDragDropMode(QAbstractItemView.InternalMove)
-
-        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.orderList)
-
-
-        self.retranslateUi(Settings)
-        self.buttonBox.accepted.connect(Settings.accept)
-        self.buttonBox.rejected.connect(Settings.reject)
-
-        QMetaObject.connectSlotsByName(Settings)
-    # setupUi
-
-    def retranslateUi(self, Settings):
-        Settings.setWindowTitle(QCoreApplication.translate("Settings", u"Settings", None))
-        self.label.setText(QCoreApplication.translate("Settings", u"Search directory:", None))
-        self.browseFiles.setText(QCoreApplication.translate("Settings", u"Browse", None))
-        self.label_2.setText(QCoreApplication.translate("Settings", u"Manage tags:", None))
-        self.tagEditorButton.setText(QCoreApplication.translate("Settings", u"Tag editor", None))
-        self.label_3.setText(QCoreApplication.translate("Settings", u"Manage variables:", None))
-        self.variableManagerButton.setText(QCoreApplication.translate("Settings", u"Variable manager", None))
-        self.showUntaggedCheckBox.setText(QCoreApplication.translate("Settings", u"Show", None))
-        self.label_4.setText(QCoreApplication.translate("Settings", u"Untagged shelf:", None))
-        self.label_5.setText(QCoreApplication.translate("Settings", u"Reorder shelves:", None))
-    # retranslateUi
-
+    def get_config(self):
+        return self.config
