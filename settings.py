@@ -12,6 +12,10 @@ class SettingsDialog(QDialog):
         self.ui.setupUi(self)
         self.cur = cur
         self.dbcon = dbcon
+        self.ui.pathEdit.setText(config["search_dir"])
+        self.ui.pathEdit.textChanged.connect(self.edit_search_path)
+        self.ui.vlcEdit.setText(config["vlc"])
+        self.ui.vlcEdit.textChanged.connect(self.edit_vlc_path)
         self.ui.browseFiles.clicked.connect(self.browse_files)
         self.ui.tagEditorButton.clicked.connect(self.open_tag_manager)
         self.ui.variableManagerButton.clicked.connect(self.open_var_manager)
@@ -25,8 +29,16 @@ class SettingsDialog(QDialog):
 
         self.config = config
 
+    def edit_search_path(self, text):
+        self.config["search_dir"] = text
+    
+    def edit_vlc_path(self, text):
+        self.config["vlc"] = text
+
     def browse_files(self):
-        self.config["search_dir"] = QFileDialog.getExistingDirectory()
+        path = QFileDialog.getExistingDirectory()
+        self.config["search_dir"] = path
+        self.ui.pathEdit.setText(path)
 
     def open_tag_manager(self):
         self.tag_manager = TagManager(self.cur)

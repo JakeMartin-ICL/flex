@@ -31,6 +31,8 @@ class Ui_MainWindow(object):
         self.actionSettings.setObjectName(u"actionSettings")
         self.actionRe_index = QAction(MainWindow)
         self.actionRe_index.setObjectName(u"actionRe_index")
+        self.actionReload = QAction(MainWindow)
+        self.actionReload.setObjectName(u"actionReload")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -109,8 +111,9 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menuMenu.menuAction())
-        self.menuMenu.addAction(self.actionRe_index)
         self.menuMenu.addAction(self.actionSettings)
+        self.menuMenu.addAction(self.actionReload)
+        self.menuMenu.addAction(self.actionRe_index)
 
         self.retranslateUi(MainWindow)
 
@@ -121,6 +124,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.actionRe_index.setText(QCoreApplication.translate("MainWindow", u"Re-index", None))
+        self.actionReload.setText(QCoreApplication.translate("MainWindow", u"Reload", None))
         self.shelfName.setText(QCoreApplication.translate("MainWindow", u"Random", None))
         self.shelfToolButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
         self.newShelfButton.setText(QCoreApplication.translate("MainWindow", u"+", None))

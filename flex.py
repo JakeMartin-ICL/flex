@@ -12,7 +12,6 @@ from PySide6.QtWidgets import *
 
 import queries
 from create_db import setup_tables
-from details import DetailsDialog
 from edit_shelf import EditShelfDialog
 from name_bar import NameBar
 from new_shelf import NewShelfDialog
@@ -45,7 +44,7 @@ class MainWindow(QMainWindow):
             with open("config.json", 'r') as config_file:
                 self.config = json.load(config_file)
         except:
-            self.config = {"search_dir": getcwd(), "shelves": {}, "order": [],
+            self.config = {"search_dir": getcwd(), "vlc": "vlc", "shelves": {}, "order": [],
                            "show_untagged": True}
             with open("config.json", 'w') as new_config:
                 json.dump(self.config, new_config)
@@ -58,10 +57,6 @@ class MainWindow(QMainWindow):
                 f"{getcwd()}/thumbnails/{uid}.jpg"), name)
             list_item.setData(QtCore.Qt.UserRole, uid)
             self.ui.listWidget.addItem(list_item)
-
-        self.ui.listWidget.itemClicked.connect(self.video_clicked)
-        self.ui.listWidget.customContextMenuRequested.connect(
-            lambda loc, bar=self.ui.listWidget: self.open_details(loc, bar, False))
 
         self.shelves = {}
         self.load_shelves()
@@ -80,27 +75,19 @@ class MainWindow(QMainWindow):
     def new_direct_query_shelf(self, name, query, pictures=False):
         shelf_config = {"filter": query, "limit": 30,
                         "shuffle": False, "pictures": pictures}
-        shelf = Shelf(self.cur, name, shelf_config, direct_query=True)
+        shelf = Shelf(self.cur, self.dbcon, name, shelf_config,
+                      self.config["vlc"], direct_query=True)
         label = QLabel(f"{name} - {len(shelf)}")
         self.ui.scrollAreaLayout.insertWidget(
             self.ui.scrollAreaLayout.count() - 2, label)
         self.ui.scrollAreaLayout.insertWidget(
             self.ui.scrollAreaLayout.count() - 2, shelf)
-
-        if pictures:
-            shelf.itemClicked.connect(self.picture_clicked)
-            shelf.customContextMenuRequested.connect(
-                lambda loc, bar=shelf: self.open_details(loc, bar, True))
-        else:
-            shelf.itemClicked.connect(self.video_clicked)
-            shelf.customContextMenuRequested.connect(
-                lambda loc, bar=shelf: self.open_details(loc, bar, False))
-        shelf.doubleClicked.connect(lambda item, picture=pictures: self.open_location(item, picture))
         self.shelves[name] = (label, shelf)
 
     def new_shelf(self, name, picture=False):
         shelf_config = self.config["shelves"][name]
-        shelf = Shelf(self.cur, name, shelf_config)
+        shelf = Shelf(self.cur, self.dbcon, name,
+                      shelf_config, self.config["vlc"])
         name_bar = NameBar(f"{name} - {len(shelf)}")
         self.ui.scrollAreaLayout.insertWidget(
             self.ui.scrollAreaLayout.count() - 2, name_bar)
@@ -108,65 +95,7 @@ class MainWindow(QMainWindow):
             lambda test=True, name=name: self.open_edit_shelf_dialog(test, name))
         self.ui.scrollAreaLayout.insertWidget(
             self.ui.scrollAreaLayout.count() - 2, shelf)
-
-        if picture:
-            shelf.itemClicked.connect(self.picture_clicked)
-            shelf.customContextMenuRequested.connect(
-                lambda loc, bar=shelf: self.open_details(loc, bar, True))
-        else:
-            shelf.itemClicked.connect(self.video_clicked)
-            shelf.customContextMenuRequested.connect(
-                lambda loc, bar=shelf: self.open_details(loc, bar, False))
-        shelf.doubleClicked.connect(lambda item, picture=picture: self.open_location(item, picture))
         self.shelves[name] = (name_bar, shelf)
-
-    def video_clicked(self, item):
-        uid = item.data(QtCore.Qt.UserRole)
-        (path, ) = self.cur.execute(
-            "SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
-        subprocess.Popen(
-            ["C:/Program Files/VideoLAN/VLC/vlc.exe", f"file:///{path}"])
-
-    def picture_clicked(self, item):
-        uid = item.data(QtCore.Qt.UserRole)
-        (path, ) = self.cur.execute(
-            "SELECT path FROM pictures WHERE uid = ?", (uid,)).fetchone()
-        if sys.platform.startswith('linux'):
-            subprocess.call(['xdg-open', path])
-
-        elif sys.platform.startswith('darwin'):
-            subprocess.call(['open', path])
-
-        elif sys.platform.startswith('win'):
-            subprocess.call(['explorer', os.path.abspath(path)])
-
-    def open_details(self, loc, bar, picture):
-        item = bar.itemAt(loc)
-        self.details = DetailsDialog(
-            self.cur, item.data(QtCore.Qt.UserRole), item, picture)
-        if self.details.exec() == QDialog.Accepted:
-            self.dbcon.commit()
-        else:
-            self.dbcon.rollback()
-    
-    def open_location(self, item, picture):
-        print("HERE")
-        uid = item.data(QtCore.Qt.UserRole)
-        if picture:
-            (path, ) = self.cur.execute(
-                "SELECT path FROM pictures WHERE uid = ?", (uid,)).fetchone()
-        else:
-            (path, ) = self.cur.execute(
-                "SELECT path FROM films WHERE uid = ?", (uid,)).fetchone()
-        path = os.path.dirname(path)
-        if sys.platform.startswith('linux'):
-            subprocess.call(['xdg-open', path])
-
-        elif sys.platform.startswith('darwin'):
-            subprocess.call(['open', path])
-
-        elif sys.platform.startswith('win'):
-            subprocess.call(['explorer', os.path.abspath(path)])
 
     def open_new_shelf_dialog(self):
         self.new_shelf_dialog = NewShelfDialog(self.cur, self.config)

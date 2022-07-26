@@ -11,27 +11,27 @@ from ui.details_ui import Ui_Details
 
 
 class DetailsDialog(QDialog):
-    def __init__(self, cur, uid, item, pictures=False):
+    def __init__(self, cur, item, pictures=False):
         super().__init__()
         #super(QDialogButtonBox, self).__init__()
         self.ui = Ui_Details()
         self.ui.setupUi(self)
         self.cur = cur
-        self.uid = uid
+        self.uid = item.data(Qt.UserRole)
         self.list_item = item
 
         self.target = 'picture' if pictures else 'film'
 
         if pictures:
             (name, self.path) = self.cur.execute(
-                "SELECT name, path FROM pictures WHERE uid = ?", (uid,)).fetchone()
+                "SELECT name, path FROM pictures WHERE uid = ?", (self.uid,)).fetchone()
             self.ui.formLayout.removeRow(self.ui.formLayout.rowCount() - 2)
             dirpath = os.path.dirname(self.path)
             self.cwd_uids = self.cur.execute(
                 "SELECT uid, path FROM pictures WHERE path LIKE ?", (dirpath+'\%',)).fetchall()
         else:
             (name, thumbfrac, self.path, self.duration) = self.cur.execute(
-                "SELECT name, thumbfrac, path, duration FROM films WHERE uid = ?", (uid,)).fetchone()
+                "SELECT name, thumbfrac, path, duration FROM films WHERE uid = ?", (self.uid,)).fetchone()
             self.ui.thumbPosSlider.setValue(int(thumbfrac*100))
             self.ui.rethumbButton.clicked.connect(self.rethumb)
             self.ui.resetThumbSliderButton.clicked.connect(self.reset_thumb)
