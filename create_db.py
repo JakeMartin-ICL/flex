@@ -1,15 +1,21 @@
 films = """CREATE TABLE "films" (
 	"uid"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT NOT NULL ,
+	"name"	TEXT NOT NULL,
 	"path"	TEXT NOT NULL UNIQUE,
 	"duration"	INTEGER NOT NULL,
 	"thumbfrac"	REAL DEFAULT 0.5,
+	"added"	INTEGER NOT NULL,
+	"accessed"	INTEGER NOT NULL,
+	"size"	REAL NOT NULL,
 	PRIMARY KEY("uid" AUTOINCREMENT))"""
 
 pictures = """CREATE TABLE "pictures" (
 	"uid"	INTEGER NOT NULL UNIQUE,
 	"name"	TEXT NOT NULL,
 	"path"	TEXT NOT NULL UNIQUE,
+	"added"	INTEGER NOT NULL,
+	"accessed"	INTEGER NOT NULL,
+	"size"	INTEGER NOT NULL,
 	PRIMARY KEY("uid" AUTOINCREMENT))"""
 
 tags = """CREATE TABLE "tags" (
