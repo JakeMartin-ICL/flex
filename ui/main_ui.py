@@ -16,11 +16,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
-    QListView, QListWidget, QListWidgetItem, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QSpacerItem, QStatusBar, QToolButton,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QStatusBar, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -47,45 +45,6 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 1679, 783))
         self.scrollAreaLayout = QVBoxLayout(self.scrollAreaWidgetContents_2)
         self.scrollAreaLayout.setObjectName(u"scrollAreaLayout")
-        self.nameBar = QWidget(self.scrollAreaWidgetContents_2)
-        self.nameBar.setObjectName(u"nameBar")
-        self.horizontalLayout = QHBoxLayout(self.nameBar)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.shelfName = QLabel(self.nameBar)
-        self.shelfName.setObjectName(u"shelfName")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.shelfName.sizePolicy().hasHeightForWidth())
-        self.shelfName.setSizePolicy(sizePolicy)
-        self.shelfName.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-
-        self.horizontalLayout.addWidget(self.shelfName)
-
-        self.shelfToolButton = QToolButton(self.nameBar)
-        self.shelfToolButton.setObjectName(u"shelfToolButton")
-
-        self.horizontalLayout.addWidget(self.shelfToolButton)
-
-
-        self.scrollAreaLayout.addWidget(self.nameBar)
-
-        self.listWidget = QListWidget(self.scrollAreaWidgetContents_2)
-        self.listWidget.setObjectName(u"listWidget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.listWidget.sizePolicy().hasHeightForWidth())
-        self.listWidget.setSizePolicy(sizePolicy1)
-        self.listWidget.setMinimumSize(QSize(0, 230))
-        self.listWidget.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.listWidget.setIconSize(QSize(320, 180))
-        self.listWidget.setProperty("isWrapping", False)
-        self.listWidget.setResizeMode(QListView.Adjust)
-        self.listWidget.setViewMode(QListView.IconMode)
-
-        self.scrollAreaLayout.addWidget(self.listWidget)
-
         self.newShelfButton = QPushButton(self.scrollAreaWidgetContents_2)
         self.newShelfButton.setObjectName(u"newShelfButton")
 
@@ -125,8 +84,6 @@ class Ui_MainWindow(object):
         self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.actionRe_index.setText(QCoreApplication.translate("MainWindow", u"Re-index", None))
         self.actionReload.setText(QCoreApplication.translate("MainWindow", u"Reload", None))
-        self.shelfName.setText(QCoreApplication.translate("MainWindow", u"Random", None))
-        self.shelfToolButton.setText(QCoreApplication.translate("MainWindow", u"...", None))
         self.newShelfButton.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.menuMenu.setTitle(QCoreApplication.translate("MainWindow", u"Menu", None))
     # retranslateUi

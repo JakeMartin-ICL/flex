@@ -37,69 +37,6 @@
        </property>
        <layout class="QVBoxLayout" name="scrollAreaLayout">
         <item>
-         <widget class="QWidget" name="nameBar" native="true">
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLabel" name="shelfName">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Random</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="shelfToolButton">
-             <property name="text">
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QListWidget" name="listWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>230</height>
-           </size>
-          </property>
-          <property name="contextMenuPolicy">
-           <enum>Qt::CustomContextMenu</enum>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>320</width>
-            <height>180</height>
-           </size>
-          </property>
-          <property name="isWrapping" stdset="0">
-           <bool>false</bool>
-          </property>
-          <property name="resizeMode">
-           <enum>QListView::Adjust</enum>
-          </property>
-          <property name="viewMode">
-           <enum>QListView::IconMode</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="newShelfButton">
           <property name="text">
            <string>+</string>
@@ -138,8 +75,9 @@
     <property name="title">
      <string>Menu</string>
     </property>
-    <addaction name="actionRe_index"/>
     <addaction name="actionSettings"/>
+    <addaction name="actionReload"/>
+    <addaction name="actionRe_index"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
@@ -152,6 +90,11 @@
   <action name="actionRe_index">
    <property name="text">
     <string>Re-index</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="text">
+    <string>Reload</string>
    </property>
   </action>
  </widget>

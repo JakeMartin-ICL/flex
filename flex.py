@@ -49,19 +49,12 @@ class MainWindow(QMainWindow):
             with open("config.json", 'w') as new_config:
                 json.dump(self.config, new_config)
 
-        random10 = self.cur.execute(
-            "SELECT uid, name, path FROM films ORDER BY RANDOM() LIMIT 10").fetchall()
-        for (uid, name, _) in random10:
-            name = (name[:50] + '..') if len(name) > 75 else name
-            list_item = QListWidgetItem(QtGui.QIcon(
-                f"{getcwd()}/thumbnails/{uid}.jpg"), name)
-            list_item.setData(QtCore.Qt.UserRole, uid)
-            self.ui.listWidget.addItem(list_item)
-
         self.shelves = {}
         self.load_shelves()
 
     def load_shelves(self):
+        self.new_direct_query_shelf(
+            "Random Videos", queries.random_vids, pictures=False)
         self.new_direct_query_shelf(
             "Random Pictures", queries.random_pics, pictures=True)
 
