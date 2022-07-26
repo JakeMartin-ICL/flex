@@ -77,6 +77,7 @@ class EditShelfDialog(QDialog):
 
     def delete_filter(self):
         del self.config["shelves"][self.name]
+        self.config["order"].remove(self.name)
 
     def get_config(self):
         return self.config
