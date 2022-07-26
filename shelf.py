@@ -1,4 +1,5 @@
 from os import getcwd
+import os
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
@@ -51,7 +52,7 @@ class Shelf(QListWidget):
         self.len = len(results)
         for (uid, name, path) in results:
             name = (name[:50] + '..') if len(name) > 75 else name
-            icon_path = path if self.pictures else f"{getcwd()}/thumbnails/{uid}.jpg"
+            icon_path = path if self.pictures else os.path.join(getcwd(), 'thumbnails', f'{uid}.jpg')#f"{getcwd()}/thumbnails/{uid}.jpg"
             list_item = QListWidgetItem(QIcon(icon_path), name)
             list_item.setData(Qt.UserRole, uid)
             self.addItem(list_item)

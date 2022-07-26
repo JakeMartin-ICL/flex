@@ -164,7 +164,7 @@ class DetailsDialog(QDialog):
     def rethumb(self):
         thumbfrac = self.ui.thumbPosSlider.value()/100
         pos = int(self.duration*thumbfrac)
-        thumb_path = f"{getcwd()}\\thumbnails\\{self.uid}.jpg"
+        thumb_path = os.path.join(getcwd(), 'thumbnails', f"{self.uid}.jpg")
         subprocess.call(['ffmpeg', '-ss', str(pos), '-i', self.path,  '-vframes', '1', '-vf', 'scale=320:180:force_original_aspect_ratio=decrease,pad=320:180:-1:-1', '-y', thumb_path],
                         stdout=subprocess.DEVNULL)
         new_icon = QIcon(thumb_path)
