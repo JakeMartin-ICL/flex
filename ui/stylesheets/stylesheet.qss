@@ -72,6 +72,18 @@ QCheckBox
 
 }
 
+/*-----QCheckBox-----*/
+QRadioButton
+{
+	background-color: transparent;
+	color: #fff;
+	font-size: 10px;
+	font-weight: bold;
+	border: none;
+	border-radius: 5px;
+
+}
+
 
 /*-----QCheckBox-----*/
 QCheckBox::indicator
@@ -129,6 +141,41 @@ QLineEdit
 
 }
 
+/*-----QPlainTextEdit-----*/
+QPlainTextEdit
+{
+	background-color: #c2c7d5;
+	color: #000;
+	font-weight: bold;
+	border: none;
+	border-radius: 2px;
+	padding: 3px;
+
+}
+
+/*-----QTextBrowser-----*/
+QTextBrowser
+{
+	background-color: #c2c7d5;
+	color: #000;
+	font-weight: bold;
+	border: none;
+	border-radius: 2px;
+	padding: 3px;
+
+}
+
+/*-----QSpinBox-----*/
+QSpinBox
+{
+	background-color: #c2c7d5;
+	color: #000;
+	font-weight: bold;
+	border: none;
+	border-radius: 2px;
+	padding: 3px;
+
+}
 
 /*-----QListView-----*/
 QListView
