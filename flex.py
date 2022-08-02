@@ -62,8 +62,7 @@ class MainWindow(QMainWindow):
             self.new_direct_query_shelf("Untagged Files", queries.untagged)
 
         for shelf_name in self.config["order"]:
-            self.new_shelf(
-                shelf_name, self.config["shelves"][shelf_name]["pictures"])
+            self.new_shelf(shelf_name)
 
     def new_direct_query_shelf(self, name, query, pictures=False):
         shelf_config = {"filter": query, "limit": 30,
@@ -77,7 +76,7 @@ class MainWindow(QMainWindow):
             self.ui.scrollAreaLayout.count() - 2, shelf)
         self.shelves[name] = (label, shelf)
 
-    def new_shelf(self, name, picture=False):
+    def new_shelf(self, name):
         shelf_config = self.config["shelves"][name]
         shelf = Shelf(self.cur, self.dbcon, name,
                       shelf_config, self.config["vlc"])
@@ -96,7 +95,7 @@ class MainWindow(QMainWindow):
             self.config = self.new_shelf_dialog.get_config()
             self.save_config()
             name = list(self.config["shelves"].keys())[-1]
-            self.new_shelf(name, self.config["shelves"][name]["pictures"])
+            self.new_shelf(name)
 
     def open_edit_shelf_dialog(self, test, name):
         print(f"T: {test}. n: {name}")
@@ -165,7 +164,7 @@ class MainWindow(QMainWindow):
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
                 size = os.path.getsize(path)
-                id = self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?) RETURNING uid", (
+                id = self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?)", (
                     name, path, added, accessed, size)).fetchone()[0]
                 print(f"Added: {path}")
 
