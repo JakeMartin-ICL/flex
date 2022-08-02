@@ -26,7 +26,7 @@ class Ui_NewShelfDialog(object):
     def setupUi(self, NewShelfDialog):
         if not NewShelfDialog.objectName():
             NewShelfDialog.setObjectName(u"NewShelfDialog")
-        NewShelfDialog.resize(823, 558)
+        NewShelfDialog.resize(823, 689)
         self.verticalLayout = QVBoxLayout(NewShelfDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.label = QLabel(NewShelfDialog)
