@@ -136,7 +136,6 @@ class MainWindow(QMainWindow):
         for (name, path) in films:
             if path not in dbpaths:
                 info = MediaInfo.parse(path)
-                info.tr
                 duration = int(float(info.video_tracks[0].duration)) // 1000
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
