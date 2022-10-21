@@ -125,11 +125,12 @@ class MainWindow(QMainWindow):
     def reindex(self):
         start = time.time()
         films = findFilms(self.config["search_dir"])
+        local_paths = [path for (_, path) in films]
         dbpaths = [path for (path, ) in self.cur.execute(
             "SELECT path from films").fetchall()]
         # Delete moved or removed films
         for dbpath in dbpaths:
-            if dbpath not in [path for (_, path) in films]:
+            if dbpath not in local_paths:
                 self.cur.execute("DELETE FROM films WHERE path = ?", (dbpath,))
                 print(f"Removed: {dbpath}")
 
@@ -152,11 +153,12 @@ class MainWindow(QMainWindow):
                 print(f"Added: {path}")
 
         pictures = findPictures(self.config["search_dir"])
+        local_paths = [path for (_, path) in pictures]
         dbpaths = [path for (path, ) in self.cur.execute(
             "SELECT path FROM pictures").fetchall()]
         # Delete moved or removed films
         for dbpath in dbpaths:
-            if dbpath not in [path for (_, path) in pictures]:
+            if dbpath not in local_paths:
                 self.cur.execute(
                     "DELETE FROM pictures WHERE path = ?", (dbpath,))
                 print(f"Removed: {dbpath}")
