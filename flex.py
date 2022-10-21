@@ -136,12 +136,15 @@ class MainWindow(QMainWindow):
         for (name, path) in films:
             if path not in dbpaths:
                 info = MediaInfo.parse(path)
-                duration = int(float(info.video_tracks[0].duration)) // 1000
+                try:
+                    duration = int(float(info.video_tracks[0].duration)) // 1000
+                except:
+                    print(f"File {name} appears to have no video track - skipping.")
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
                 size = os.path.getsize(path)
                 self.cur.execute("INSERT into films (name, path, duration, added, accessed, size) VALUES (?, ?, ?, ?, ?, ?)", (
-                    name, path, duration, added, accessed, size)).fetchone()[0]
+                    name, path, duration, added, accessed, size))
                 id = self.cur.lastrowid
                 thumb_path = os.path.join(getcwd(), 'thumbnails', f"{id}.jpg")
                 subprocess.call(['ffmpeg', '-ss', str(duration//2), '-i', path,  '-vframes', '1', '-vf', 'scale=320:180:force_original_aspect_ratio=decrease,pad=320:180:-1:-1', '-y', thumb_path],
@@ -163,8 +166,9 @@ class MainWindow(QMainWindow):
                 added = int(time.time())
                 accessed = int(os.path.getatime(path))
                 size = os.path.getsize(path)
-                id = self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?)", (
-                    name, path, added, accessed, size)).fetchone()[0]
+                self.cur.execute("INSERT into pictures (name, path, added, accessed, size) VALUES (?, ?, ?, ?, ?)", (
+                    name, path, added, accessed, size))
+                id - self.cur.lastrowid
                 print(f"Added: {path}")
 
         print(f"Database reindexed in {time.time() - start}")
