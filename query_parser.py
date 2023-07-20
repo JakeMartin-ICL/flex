@@ -12,7 +12,8 @@ def SQLify(filter, limit, shuffle, pictures=False):
     curr = 0
     negate = False
     target = 'picture' if pictures else 'film'
-    query = f'SELECT DISTINCT uid, name, path FROM {target}s LEFT JOIN tagmap ON {target}s.uid = tagmap.{target}id LEFT JOIN tags ON tags.tagid = tagmap.tagid LEFT JOIN varmap ON {target}s.uid = varmap.{target}id LEFT JOIN variables ON varmap.varid = variables.varid WHERE ('
+    base_query = f'SELECT *, group_concat(tag) AS tags FROM {target}s LEFT JOIN tagmap ON {target}s.uid = tagmap.{target}id LEFT JOIN tags ON tags.tagid = tagmap.tagid LEFT JOIN varmap ON {target}s.uid = varmap.{target}id LEFT JOIN variables ON varmap.varid = variables.varid GROUP BY uid'
+    query = f'SELECT DISTINCT uid, name, path FROM ({base_query}) WHERE ('
     while curr < len(filter):
         char = filter[curr]
         if char == '!':
@@ -21,7 +22,7 @@ def SQLify(filter, limit, shuffle, pictures=False):
             curr += 1
             if char == '[':
                 tag, curr = get_token(filter, curr)
-                query += f'tag {"!=" if negate else "="} "{tag}" '
+                query += f'instr(tags, "{tag}"){"= 0" if negate else "> 0"}'
                 negate = False
             elif char == '{':
                 var, curr = get_token(filter, curr)
